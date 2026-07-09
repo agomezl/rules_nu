@@ -1,0 +1,10 @@
+module(
+    name = "rules_nu",
+    version = "0.1.0",
+    repo_name = "rules_nu",
+)
+
+local_nu_binary = use_repo_rule("//nu/toolchain:repo.bzl", "local_nu_binary")
+local_nu_binary(name = "local_nu")
+
+register_toolchains("//nu/toolchain:local_nu")
