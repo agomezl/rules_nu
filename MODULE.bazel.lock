@@ -188,6 +188,26 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
+    "//nu:extensions.bzl%nu": {
+      "general": {
+        "bzlTransitiveDigest": "q5HDYcEGA7vnZ1lYhyhGLn8xNjbUFWPbGgqie65mNzQ=",
+        "usagesDigest": "44V0FlAi2Ke/x0vhu5LlFGtpkxRGi8k3C22wzdN4urE=",
+        "recordedInputs": [
+          "REPO_MAPPING:,bazel_tools bazel_tools"
+        ],
+        "generatedRepoSpecs": {
+          "nu_macos": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "url": "https://github.com/nushell/nushell/releases/download/0.114.0/nu-0.114.0-aarch64-apple-darwin.tar.gz",
+              "sha256": "c98f7deedd41023fe6dc4567abb368c9442bda62989b91e179e095cbb457ce58",
+              "strip_prefix": "",
+              "build_file_content": "\nload(\n    \"@rules_nu//nu/toolchains:defs.bzl\",\n    \"nushell_toolchain\",\n    \"NUSHELL_TOOLCHAIN_TYPE\",\n)\n\nexports_files([\"nu-0.114.0-aarch64-apple-darwin/nu\"])\n\nalias(\n    name = \"nu_cmd\",\n    actual = \"nu-0.114.0-aarch64-apple-darwin/nu\",\n    visibility = [\"//visibility:public\"],\n)\n\nnushell_toolchain(\n    name = \"nu_macos_nushell\",\n    nu = \":nu_cmd\",\n)\n\n\ntoolchain(\n    name = \"nu_macos_nushell_toolchain\",\n    toolchain = \":nu_macos_nushell\",\n    toolchain_type = NUSHELL_TOOLCHAIN_TYPE,\n    visibility = [\"//visibility:public\"],\n)\n"
+            }
+          }
+        }
+      }
+    },
     "@@rules_kotlin+//src/main/starlark/core/repositories:bzlmod_setup.bzl%rules_kotlin_extensions": {
       "general": {
         "bzlTransitiveDigest": "Ga4z8lQy1YQ5rAMy+dOl0dqcCEBnYNCXku8x3YQmDZI=",
