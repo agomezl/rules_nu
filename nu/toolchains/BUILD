@@ -2,7 +2,10 @@
 load(":defs.bzl", "nushell_toolchain")
 
 # Nushell toolchain type
-toolchain_type(name = "toolchain_type")
+toolchain_type(
+    name = "type",
+    visibility = ["//visibility:public"],
+)
 
 # Default nushell toolchain target
 # Update the 'nu' attribute to point to your actual nushell binary

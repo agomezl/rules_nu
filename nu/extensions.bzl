@@ -37,7 +37,6 @@ _url = tag_class(attrs = {
     "name": attr.string(),
     "sha256": attr.string(),
     "strip_prefix": attr.string(),
-    "strip_components": attr.int(),
     "nu_path": attr.string(default = "nu"),
 })
 
@@ -49,7 +48,6 @@ def _nu_impl(mctx):
                 url = url.url,
                 sha256 = url.sha256,
                 strip_prefix = url.strip_prefix,
-                strip_components = url.strip_components,
                 build_file_content = (
                     BUILD_FILE_TEMPLATE.format(
                         name = url.name,

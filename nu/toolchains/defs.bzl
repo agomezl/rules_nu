@@ -1,7 +1,7 @@
 """Nushell toolchain definitions."""
 
 # Toolchain type identifier
-NUSHELL_TOOLCHAIN_TYPE = Label("@rules_nu//nu/toolchain:toolchain_type")
+NUSHELL_TOOLCHAIN_TYPE = Label("@rules_nu//nu/toolchains:type")
 
 def _nushell_toolchain_impl(ctx):
     return [
