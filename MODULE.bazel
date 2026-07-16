@@ -4,6 +4,8 @@ module(
     repo_name = "rules_nu",
 )
 
+bazel_dep(name = "hermetic_launcher", version = "0.0.8")
+
 nu = use_extension("//nu:extensions.bzl", "nu")
 nu.url(
     name = "nu_macos",
