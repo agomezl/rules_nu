@@ -6,6 +6,7 @@ module(
 
 bazel_dep(name = "hermetic_launcher", version = "0.0.8")
 bazel_dep(name = "rules_testing", version = "0.7.0", dev_dependency = True)
+bazel_dep(name = "bazelrc-preset.bzl", version = "1.9.2", dev_dependency = True)
 
 nu = use_extension("//nu:extensions.bzl", "nu")
 nu.url(
