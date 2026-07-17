@@ -57,5 +57,4 @@ nu_binary = rule(
         launcher.finalizer_toolchain_type,
         launcher.template_toolchain_type,
     ],
-    provides = [NuInfo],
 )

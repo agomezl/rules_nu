@@ -1,11 +1,11 @@
-load("//nu:rules.bzl", "nu_genrule", "nu_libary")
+load("//nu:rules.bzl", "nu_genrule", "nu_library")
 
-nu_libary(
+nu_library(
     name = "hello",
     srcs = ["hello.nu"],
 )
 
-nu_libary(
+nu_library(
     name = "sum",
     srcs = ["sum.nu"],
     deps = [":hello"],
