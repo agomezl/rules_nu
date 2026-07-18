@@ -1,6 +1,11 @@
 ########################
+# Import bazelrc configs
+import %workspace%/tools/rc/re.bazelrc
+import %workspace%/tools/rc/ci.bazelrc
+
+########################
 # Import bazelrc presets
-try-import %workspace%/tools/preset.bazelrc
+import %workspace%/tools/preset.bazelrc
 
 ########################
 # Project-specific flags

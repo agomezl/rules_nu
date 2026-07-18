@@ -1,0 +1,8 @@
+build:re --bes_results_url=https://app.buildbuddy.io/invocation/
+build:re --bes_backend=grpcs://remote.buildbuddy.io
+common:re --remote_cache=grpcs://remote.buildbuddy.io
+common:re --remote_timeout=10m
+common:re --jobs=80
+common:re --remote_executor=grpcs://remote.buildbuddy.io
+common:re --platforms=@toolchains_buildbuddy//platforms:linux_x86_64
+common:re --extra_execution_platforms=@toolchains_buildbuddy//platforms:linux_x86_64
