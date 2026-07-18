@@ -1,0 +1,3 @@
+export def add [a: int, b: int] {
+    $a + $b
+}

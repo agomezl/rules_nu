@@ -211,7 +211,7 @@
   "moduleExtensions": {
     "//nu:extensions.bzl%nu": {
       "general": {
-        "bzlTransitiveDigest": "OFa7Zyddx6gOAHDv8PQjQ7YvgBv1/bZq44AOknE4mCM=",
+        "bzlTransitiveDigest": "AoPYM/Zb341srWU0c+NixyUMTMv65xOh0zKH5i8DvvQ=",
         "usagesDigest": "M4y0m2mszjVzpYPwqR4BKCqgZWA9Afr3jIjhJs6/f2I=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools",
