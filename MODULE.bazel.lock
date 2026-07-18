@@ -211,19 +211,30 @@
   "moduleExtensions": {
     "//nu:extensions.bzl%nu": {
       "general": {
-        "bzlTransitiveDigest": "AoPYM/Zb341srWU0c+NixyUMTMv65xOh0zKH5i8DvvQ=",
-        "usagesDigest": "M4y0m2mszjVzpYPwqR4BKCqgZWA9Afr3jIjhJs6/f2I=",
+        "bzlTransitiveDigest": "AfpWAgzclOBFCs+cW/T3q7aMIq6OnGkQ81st2S4cJqE=",
+        "usagesDigest": "4TKIZ5LhkpP2dnMilBPWD3VBz/17zy5rRaYwsmPOkII=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools",
           "REPO_MAPPING:,rules_nu "
         ],
         "generatedRepoSpecs": {
-          "nu": {
+          "nu_0_114_0_aarch64_apple_darwin": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "url": "https://github.com/nushell/nushell/releases/download/0.114.0/nu-0.114.0-aarch64-apple-darwin.tar.gz",
               "sha256": "c98f7deedd41023fe6dc4567abb368c9442bda62989b91e179e095cbb457ce58",
-              "build_file_content": "\nload(\n    \"@rules_nu//nu/toolchains:defs.bzl\",\n    \"nushell_toolchain\",\n    \"NUSHELL_TOOLCHAIN_TYPE\",\n)\n\nexports_files([\"nu-0.114.0-aarch64-apple-darwin/nu\"])\n\nalias(\n    name = \"nu_cmd\",\n    actual = \"nu-0.114.0-aarch64-apple-darwin/nu\",\n    visibility = [\"//visibility:public\"],\n)\n\nnushell_toolchain(\n    name = \"nu_nushell\",\n    nu = \":nu_cmd\",\n)\n\ntoolchain(\n    name = \"nu_nushell_toolchain\",\n    toolchain = \":nu_nushell\",\n    toolchain_type = NUSHELL_TOOLCHAIN_TYPE,\n    exec_compatible_with = [\"@platforms//os:macos\", \"@platforms//cpu:aarch64\"],\n    visibility = [\"//visibility:public\"],\n)\n"
+              "build_file_content": "\nload(\"@rules_nu//nu/toolchains:defs.bzl\", \"nushell_toolchain\")\n\nexports_files([\"nu-0.114.0-aarch64-apple-darwin/nu\"])\n\nalias(\n    name = \"nu_cmd\",\n    actual = \"nu-0.114.0-aarch64-apple-darwin/nu\",\n    visibility = [\"//visibility:public\"],\n)\n\nnushell_toolchain(\n    name = \"toolchain_impl\",\n    nu = \":nu_cmd\",\n)\n"
+            }
+          },
+          "nu_toolchains": {
+            "repoRuleId": "@@//nu/private/extensions:hub_repo.bzl%nu_toolchains_hub",
+            "attributes": {
+              "toolchain_repos": {
+                "nu_0_114_0_aarch64_apple_darwin": [
+                  "@platforms//os:macos",
+                  "@platforms//cpu:aarch64"
+                ]
+              }
             }
           }
         }

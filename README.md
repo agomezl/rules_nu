@@ -25,14 +25,16 @@ into the same pitfalls as Bash or Python. We focus on three principles:
 
 ## Setup
 
-Add `rules_nu` to your `MODULE.bazel`:
-
 ```python
 bazel_dep(name = "rules_nu", version = "0.1.0")
+
+nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
+nu.toolchain(version = "0.114.0")
+use_repo(nu, "nu_toolchains")
+register_toolchains("@nu_toolchains//:all")
 ```
 
-Then register a Nushell toolchain (see `MODULE.bazel` in this repo for an
-example).
+For multi-platform builds and custom binaries, see [TOOLCHAINS.md](TOOLCHAINS.md).
 
 ## Usage
 

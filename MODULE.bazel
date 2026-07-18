@@ -14,13 +14,10 @@ bazel_dep(name = "bazel_skylib", version = "1.9.0", dev_dependency = True)
 
 nu = use_extension("//nu:extensions.bzl", "nu")
 
-# Use version-based tag for automatic platform detection
-# The version, platform, and SHA256 hash are all resolved automatically
-# Available versions are defined in NUSHELL_RELEASES in extensions.bzl
-nu.version(
-    name = "nu",
-    version = "0.114.0",
-)
+# Use version-based tag for automatic platform detection.
+# The version, platform, and SHA256 hashes are resolved automatically.
+# Available versions are defined in NUSHELL_RELEASES in extensions.bzl.
+nu.toolchain(version = "0.114.0")
 
-use_repo(nu, "nu")
-register_toolchains("@nu//:all")
+use_repo(nu, "nu_toolchains")
+register_toolchains("@nu_toolchains//:all")

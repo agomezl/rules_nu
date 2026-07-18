@@ -1,9 +1,8 @@
-BUILD_FILE_TEMPLATE = """
-load(
-    "@rules_nu//nu/toolchains:defs.bzl",
-    "nushell_toolchain",
-    "NUSHELL_TOOLCHAIN_TYPE",
-)
+# Template for per-platform repos.
+# Only the nushell_toolchain impl lives here; the toolchain() wrapper with
+# exec_compatible_with is generated in the hub repo so Bazel can resolve it.
+PER_PLATFORM_BUILD_TEMPLATE = """
+load("@rules_nu//nu/toolchains:defs.bzl", "nushell_toolchain")
 
 exports_files(["{nu_path}"])
 
@@ -14,15 +13,7 @@ alias(
 )
 
 nushell_toolchain(
-    name = "{name}_nushell",
+    name = "toolchain_impl",
     nu = ":nu_cmd",
-)
-
-toolchain(
-    name = "{name}_nushell_toolchain",
-    toolchain = ":{name}_nushell",
-    toolchain_type = NUSHELL_TOOLCHAIN_TYPE,
-    exec_compatible_with = {exec_compatible_with},
-    visibility = ["//visibility:public"],
 )
 """
