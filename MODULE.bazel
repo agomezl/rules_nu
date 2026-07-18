@@ -7,14 +7,17 @@ module(
 bazel_dep(name = "hermetic_launcher", version = "0.0.8")
 bazel_dep(name = "rules_testing", version = "0.7.0", dev_dependency = True)
 bazel_dep(name = "bazelrc-preset.bzl", version = "1.9.2", dev_dependency = True)
+bazel_dep(name = "platforms", version = "1.1.0")
 
 nu = use_extension("//nu:extensions.bzl", "nu")
-nu.url(
-    name = "nu_macos",
-    url = "https://github.com/nushell/nushell/releases/download/0.114.0/nu-0.114.0-aarch64-apple-darwin.tar.gz",
-    sha256 = "c98f7deedd41023fe6dc4567abb368c9442bda62989b91e179e095cbb457ce58",
-    # strip_prefix = "nu-0.114.0-aarch64-apple-darwin",
-    nu_path = "nu-0.114.0-aarch64-apple-darwin/nu",
+
+# Use version-based tag for automatic platform detection
+# The version, platform, and SHA256 hash are all resolved automatically
+# Available versions are defined in NUSHELL_RELEASES in extensions.bzl
+nu.version(
+    name = "nu",
+    version = "0.114.0",
 )
-use_repo(nu, "nu_macos")
-register_toolchains("@nu_macos//:all")
+
+use_repo(nu, "nu")
+register_toolchains("@nu//:all")
