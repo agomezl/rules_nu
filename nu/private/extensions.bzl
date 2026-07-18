@@ -1,6 +1,6 @@
 load("//nu/private/extensions:hub_repo.bzl", "nu_toolchains_hub")
 load("//nu/private/extensions:url.bzl", "create_url")
-load("//nu/private/extensions:version.bzl", "create_version")
+load("//nu/private/extensions:version.bzl", "create_version", "latest_version")
 
 def _nu_impl(mctx):
     # Maps repo_name -> exec_compatible_with constraints for the hub.
@@ -16,6 +16,20 @@ def _nu_impl(mctx):
                 )
             repo, constraints = create_url(tag)
             hub_toolchains[repo] = constraints
+
+        for tag in mod.tags.latest:
+            os = tag.os or mctx.os.name
+            arch = tag.arch or mctx.os.arch
+            version = latest_version()
+            key = (version, os, arch)
+            if key not in seen:
+                seen[key] = True
+                repo, constraints = create_version(
+                    version = version,
+                    os = os,
+                    arch = arch,
+                )
+                hub_toolchains[repo] = constraints
 
         for tag in mod.tags.toolchain:
             os = tag.os or mctx.os.name
@@ -100,9 +114,27 @@ _url = tag_class(attrs = {
     ),
 })
 
+_latest = tag_class(attrs = {
+    "os": attr.string(
+        doc = """
+        Target OS identifier as returned by `mctx.os.name` (e.g. 'linux', 'mac
+        os x', 'windows'). Defaults to the host OS when omitted.
+        """,
+        default = "",
+    ),
+    "arch": attr.string(
+        doc = """
+        Target CPU architecture as returned by `mctx.os.arch` (e.g. 'x86_64',
+        'aarch64'). Defaults to the host architecture when omitted.
+        """,
+        default = "",
+    ),
+})
+
 nu = module_extension(
     implementation = _nu_impl,
     tag_classes = {
+        "latest": _latest,
         "toolchain": _toolchain,
         "url": _url,
     },

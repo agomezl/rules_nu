@@ -215,8 +215,8 @@
   "moduleExtensions": {
     "//nu:extensions.bzl%nu": {
       "general": {
-        "bzlTransitiveDigest": "3JEq0UIERe35PXmvBg9V/makcG9Gf8Rsm52lek+7Z8s=",
-        "usagesDigest": "iIPXapKNAmhtN5nSrmoCCdtdfXqPoctgWEhiGXC4ymQ=",
+        "bzlTransitiveDigest": "d+x74UPCYgqnBuFul3/Rg3hAoFdj+Xja+r8bjUw9NnQ=",
+        "usagesDigest": "H61KYIGuOpywlsxTuwssafvDV75Adt+Civccy7biigA=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools",
           "REPO_MAPPING:,rules_nu "

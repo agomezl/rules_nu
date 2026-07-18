@@ -32,6 +32,20 @@ def _get_release_hash(version, platform):
         ))
     return version_data[platform]
 
+def _version_gt(a, b):
+    """Returns True if semver string *a* is greater than *b*."""
+    a_parts = [int(x) for x in a.split(".")]
+    b_parts = [int(x) for x in b.split(".")]
+    return a_parts > b_parts
+
+def latest_version():
+    """Returns the highest version string present in NUSHELL_RELEASES."""
+    result = None
+    for v in NUSHELL_RELEASES.keys():
+        if result == None or _version_gt(v, result):
+            result = v
+    return result
+
 def create_version(version, os, arch):
     """Creates an http_archive for *version* on the given *os*/*arch*.
 
