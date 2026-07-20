@@ -216,7 +216,7 @@
     "//nu:extensions.bzl%nu": {
       "general": {
         "bzlTransitiveDigest": "d+x74UPCYgqnBuFul3/Rg3hAoFdj+Xja+r8bjUw9NnQ=",
-        "usagesDigest": "H61KYIGuOpywlsxTuwssafvDV75Adt+Civccy7biigA=",
+        "usagesDigest": "w5ZKMSAJsKVuZS2yVBjwHAhAE+bmBsrtrL9TjGn5+6Y=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools",
           "REPO_MAPPING:,rules_nu "

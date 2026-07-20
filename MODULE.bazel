@@ -19,13 +19,11 @@ register_toolchains(
     "@toolchains_buildbuddy//toolchains/cc:ubuntu_gcc_x86_64",
 )
 
-nu = use_extension("//nu:extensions.bzl", "nu", dev_dependency = True)
-
-# Use version-based tag for automatic platform detection.
-# The version, platform, and SHA256 hashes are resolved automatically.
-# Available versions are defined in NUSHELL_RELEASES in extensions.bzl.
+nu = use_extension("//nu:extensions.bzl", "nu")
 nu.latest()
-nu.latest(os = "linux", arch = "x86_64")
+
+nu_dev = use_extension("//nu:extensions.bzl", "nu", dev_dependency = True)
+nu_dev.latest(os = "linux", arch = "x86_64")
 
 use_repo(nu, "nu_toolchains")
 register_toolchains("@nu_toolchains//:all")
