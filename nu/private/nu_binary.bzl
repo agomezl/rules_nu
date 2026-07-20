@@ -11,11 +11,14 @@ def _nu_binary_impl(ctx):
     exe = ctx.actions.declare_file(ctx.label.name)
 
     embedded, transformed = launcher.args_from_entrypoint(nu)
-    embedded, transformed = launcher.append_embedded_arg(
-        arg = "-n",
-        embedded_args = embedded,
-        transformed_args = transformed,
-    )
+
+    args = ["-n", "-I", "_LIBS"]
+    for arg in args:
+        embedded, transformed = launcher.append_embedded_arg(
+            arg = arg,
+            embedded_args = embedded,
+            transformed_args = transformed,
+        )
     embedded, transformed = launcher.append_runfile(
         file = ctx.file.main,
         embedded_args = embedded,
@@ -29,7 +32,15 @@ def _nu_binary_impl(ctx):
         cfg = "target",
     )
 
-    runfiles = ctx.runfiles(files = [nu], transitive_files = all_scripts)
+    runfiles = ctx.runfiles(
+        files = [nu],
+        transitive_files = all_scripts,
+        # Module resolution occurs relative to the script's location.
+        # So, we must replicate the module paths in the runfiles tree
+        # so they can be imported as if we were in the exec root.
+        # TODO: Find a more elegant way to do this.
+        symlinks = {ctx.file.main.dirname + "/_LIBS/" + f.path: f for s in all_modules for f in s.to_list()},
+    )
 
     return [
         DefaultInfo(

@@ -114,27 +114,23 @@ def test_outputs_multiple():
 # ── TC-05: Module from nu_library is available to `use` ──────────────────────
 
 def test_modules_available():
-    nu_library(
-        name = "mod_test",
-        srcs = ["modules/math.nu"],
-    )
     nu_genrule(
         name = "modules_available",
         cmd = r"""
-            use nu/tests/nu_genrule/modules/math.nu add
+            use nu/tests/modules/math.nu add
             if (add 2 3) != 5 {
                 error make {msg: "math::add 2 3 did not return 5"}
             }
             "ok" | save $bazel.outputs.0
         """,
-        modules = [":mod_test"],
+        modules = ["//nu/tests:math"],
         outputs = [":modules_available.out"],
         **_TEST_ATTRS
     )
 
     build_test(
         name = "modules_available_test",
-        targets = [":mod_test", ":modules_available"],
+        targets = [":modules_available"],
         **_TEST_ATTRS
     )
     return "modules_available_test"
@@ -145,8 +141,10 @@ def test_nu_exe():
     nu_genrule(
         name = "nu_exe",
         cmd = r"""
-            if not (($nu.current-exe | str trim) =~ external) {
-                error make {msg: "nu binary is not from a toolchain"}
+            let nu_exe: string = ($nu.current-exe | str trim)
+            let heuristic_paths: list<string> = ["/_main/", "/external/", '/\+nu\+']
+            if not ($heuristic_paths | any {|path| $nu_exe =~ $path}) {
+                error make {msg: $'nu binary is not from a toolchain: ($nu_exe)'}
             }
             "ok" | save $bazel.outputs.0""",
         outputs = [":nu_exe.out"],
