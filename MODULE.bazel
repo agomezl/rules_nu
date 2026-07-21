@@ -1,7 +1,5 @@
 module(
     name = "rules_nu",
-    version = "0.1.0",
-    repo_name = "rules_nu",
 )
 
 bazel_dep(name = "hermetic_launcher", version = "0.0.8")
