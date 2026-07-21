@@ -1,0 +1,27 @@
+module(
+    name = "rules_nu_tests",
+)
+
+bazel_dep(name = "rules_nu")
+bazel_dep(name = "hermetic_launcher", version = "0.0.8")
+bazel_dep(name = "rules_testing", version = "0.7.0")
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "toolchains_buildbuddy", version = "0.0.4")
+
+local_path_override(
+    module_name = "rules_nu",
+    path = "../../",
+)
+
+# Explicitly add linux toolchain for remote execution
+nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
+nu.latest(os = "linux", arch = "x86_64")
+
+buildbuddy = use_extension(
+    "@toolchains_buildbuddy//:extensions.bzl",
+    "buildbuddy",
+)
+
+register_toolchains(
+    "@toolchains_buildbuddy//toolchains/cc:ubuntu_gcc_x86_64",
+)

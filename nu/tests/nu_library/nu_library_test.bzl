@@ -11,8 +11,8 @@ Verified properties:
 """
 
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
-load("//nu:rules.bzl", "nu_library")
-load("//nu/private:providers.bzl", "NuInfo")
+load("@rules_nu//nu:rules.bzl", "nu_library")
+load("@rules_nu//nu/private:providers.bzl", "NuInfo")
 
 # ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ def _default_paths(target):
     return [f.short_path for f in target[DefaultInfo].files.to_list()]
 
 # Stable prefix shared by every expected path assertion.
-_S = "nu/tests/nu_library/srcs/"
+_S = "nu_library/srcs/"
 
 # ── TC-01: Empty library (no srcs, no deps) ──────────────────────────────────
 

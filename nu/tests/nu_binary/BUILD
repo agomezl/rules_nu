@@ -1,5 +1,5 @@
 load(
-    "//nu/tests/nu_binary:nu_binary_test.bzl",
+    ":nu_binary_test.bzl",
     "test_module_import",
     "test_nu_toolchain",
     "test_simple_binary",

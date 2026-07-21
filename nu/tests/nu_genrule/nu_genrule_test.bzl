@@ -2,7 +2,7 @@
 """
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("//nu:rules.bzl", "nu_genrule", "nu_library")
+load("@rules_nu//nu:rules.bzl", "nu_genrule", "nu_library")
 
 _TEST_ATTRS = {
     "tags": ["manual"],
@@ -117,13 +117,13 @@ def test_modules_available():
     nu_genrule(
         name = "modules_available",
         cmd = r"""
-            use nu/tests/modules/math.nu add
+            use modules/math.nu add
             if (add 2 3) != 5 {
                 error make {msg: "math::add 2 3 did not return 5"}
             }
             "ok" | save $bazel.outputs.0
         """,
-        modules = ["//nu/tests:math"],
+        modules = ["//:math"],
         outputs = [":modules_available.out"],
         **_TEST_ATTRS
     )

@@ -1,7 +1,7 @@
-load("//nu:rules.bzl", "nu_library")
+load("@rules_nu//nu:rules.bzl", "nu_library")
 
 nu_library(
     name = "math",
     srcs = ["modules/math.nu"],
-    visibility = ["//nu/tests:__subpackages__"],
+    visibility = ["//:__subpackages__"],
 )

@@ -1,5 +1,5 @@
-load("//nu:rules.bzl", "nu_binary")
-load("//nu/tests:utils.bzl", "wrapped_binary_test")
+load("@rules_nu//nu:rules.bzl", "nu_binary")
+load("//:utils.bzl", "wrapped_binary_test")
 
 # ── TC-01: Checks a simple hello world binary ─────────────────────────────────
 
@@ -37,7 +37,7 @@ def test_module_import():
     nu_binary(
         name = "module_import",
         main = "srcs/modules.nu",
-        deps = ["//nu/tests:math"],
+        deps = ["//:math"],
     )
 
     wrapped_binary_test(

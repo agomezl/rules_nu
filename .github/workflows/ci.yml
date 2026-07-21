@@ -37,6 +37,9 @@ jobs:
           key: bazel-${{ runner.os }}-${{ hashFiles('.bazelversion') }}
 
       - name: Bazel test
-        run: bazel test --config=ci --remote_header=x-buildbuddy-api-key=$BB_API_KEY //...
+        run: |
+          bazel test --config=ci --remote_header=x-buildbuddy-api-key=$BB_API_KEY //...
+          cd nu/tests
+          bazel test --config=ci --remote_header=x-buildbuddy-api-key=$BB_API_KEY //...
         env:
           BB_API_KEY: ${{ secrets.BB_API_KEY }}
