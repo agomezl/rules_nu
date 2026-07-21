@@ -26,17 +26,11 @@ into the same pitfalls as Bash or Python. We focus on three principles:
 ## Setup
 
 ```python
-bazel_dep(name = "rules_nu", version = "0.1.0")
-
-nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
-nu.latest()
-use_repo(nu, "nu_toolchains")
-register_toolchains("@nu_toolchains//:all")
+bazel_dep(name = "rules_nu", version = "...")
 ```
 
-`nu.latest()` fetches the most recent Nushell version in the release database
-for the host platform. To pin a specific version instead, use
-`nu.toolchain(version = <version>)`.
+A recent version of Nushell for the host platform is fetched from the release database.
+To pin a specific version instead, use `nu.toolchain(version = <version>)`.
 
 For multi-platform builds and custom binaries, see [TOOLCHAINS.md](TOOLCHAINS.md).
 

@@ -2,12 +2,10 @@
 
 ## Latest version (simplest)
 
-Add `rules_nu` to your `MODULE.bazel` and let it pick the newest available
-version automatically:
+When you add `rules_nu` to your `MODULE.bazel`, it picks the newest available
+version automatically using `nu.latest()`:
 
 ```python
-bazel_dep(name = "rules_nu", version = "0.1.0")
-
 nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
 nu.latest()
 use_repo(nu, "nu_toolchains")
@@ -21,7 +19,7 @@ performed. The correct binary for the host platform is fetched automatically.
 ## Pinned version
 
 To lock to a specific Nushell release, use `nu.toolchain` with an explicit
-version. This is recommended for reproducible builds:
+version.
 
 ```python
 bazel_dep(name = "rules_nu", version = "0.1.0")
