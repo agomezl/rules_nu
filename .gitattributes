@@ -1,0 +1,19 @@
+# Files
+.bazelversion export-ignore
+.bazelignore export-ignore
+.bazelrc export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+MODULE.bazel.lock export-ignore
+
+# Folders
+.github export-ignore
+.github/** export-ignore
+.bcr export-ignore
+.bcr/** export-ignore
+tools export-ignore
+tools/ export-ignore
+nu/tests export-ignore
+nu/tests/** export-ignore
+examples export-ignore
+examples/** export-ignore

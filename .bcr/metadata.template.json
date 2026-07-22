@@ -1,0 +1,13 @@
+{
+  "homepage": "https://github.com/agomezl/rules_nu",
+  "maintainers": [
+    {
+      "email": "1539099+agomezl@users.noreply.github.com",
+      "github": "agomezl",
+      "name": "Alejandro G\u00f3mez-Londo\u00f1o"
+    }
+  ],
+  "repository": ["github:agomezl/rules_nu"],
+  "versions": [],
+  "yanked_versions": {}
+}
