@@ -2,6 +2,22 @@ load("//nu/private/extensions:hub_repo.bzl", "nu_toolchains_hub")
 load("//nu/private/extensions:url.bzl", "create_url")
 load("//nu/private/extensions:version.bzl", "create_version", "latest_version")
 
+def _canonical_os(os):
+    os_name = os.lower()
+    if any([os_name.startswith(x) for x in ("mac", "darwin")]):
+        return "macos"
+    if os_name.startswith("windows"):
+        return "windows"
+    return os_name
+
+def _canonical_arch(arch):
+    arch = arch.lower()
+    if arch in ("amd64", "x86_64", "x64"):
+        return "x86_64"
+    if arch in ("aarch64", "arm64"):
+        return "aarch64"
+    return arch
+
 def _nu_impl(mctx):
     # Maps repo_name -> exec_compatible_with constraints for the hub.
     hub_toolchains = {}
@@ -18,8 +34,8 @@ def _nu_impl(mctx):
             hub_toolchains[repo] = constraints
 
         for tag in mod.tags.latest:
-            os = tag.os or mctx.os.name
-            arch = tag.arch or mctx.os.arch
+            os = _canonical_os(tag.os or mctx.os.name)
+            arch = _canonical_arch(tag.arch or mctx.os.arch)
             version = latest_version()
             key = (version, os, arch)
             if key not in seen:
@@ -32,8 +48,8 @@ def _nu_impl(mctx):
                 hub_toolchains[repo] = constraints
 
         for tag in mod.tags.toolchain:
-            os = tag.os or mctx.os.name
-            arch = tag.arch or mctx.os.arch
+            os = _canonical_os(tag.os or mctx.os.name)
+            arch = _canonical_arch(tag.arch or mctx.os.arch)
             key = (tag.version, os, arch)
             if key not in seen:
                 seen[key] = True

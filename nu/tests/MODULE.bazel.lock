@@ -268,7 +268,7 @@
     },
     "@@rules_nu+//nu:extensions.bzl%nu": {
       "general": {
-        "bzlTransitiveDigest": "NHchzENkjCLIMxBQKPYKVa1ngcvxL/FrtD01YeP7sR0=",
+        "bzlTransitiveDigest": "Rs2UUxgYVw9PY5dGLLAL6YAoIRO0e6rjBjdAKLhZjc8=",
         "usagesDigest": "OBQd5rrmvIIU2rooyT9lLypGskd1XiIdobFyRGLXio4=",
         "recordedInputs": [
           "REPO_MAPPING:rules_nu+,bazel_tools bazel_tools",
