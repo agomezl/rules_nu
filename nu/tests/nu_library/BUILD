@@ -27,7 +27,7 @@ test_defaultinfo_isolation_single_dep()
 test_defaultinfo_isolation_transitive()
 
 test_suite(
-    name = "nu_library_tests",
+    name = "tests",
     tests = [
         ":test_empty_library",
         ":test_srcs_only",
@@ -38,4 +38,5 @@ test_suite(
         ":test_defaultinfo_isolation_single_dep",
         ":test_defaultinfo_isolation_transitive",
     ],
+    visibility = ["//visibility:public"],
 )

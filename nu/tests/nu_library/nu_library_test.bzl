@@ -16,16 +16,13 @@ load("@rules_nu//nu/private:providers.bzl", "NuInfo")
 
 # ── Shared helpers ────────────────────────────────────────────────────────────
 
-def _script_paths(target):
-    """NuInfo.scripts depset as an ordered list of short_paths."""
-    return [f.short_path for f in target[NuInfo].scripts.to_list()]
+def _scripts(target):
+    """NuInfo.scripts depset as an ordered list of file names."""
+    return [f.basename for f in target[NuInfo].scripts.to_list()]
 
-def _default_paths(target):
-    """DefaultInfo.files depset as an ordered list of short_paths."""
-    return [f.short_path for f in target[DefaultInfo].files.to_list()]
-
-# Stable prefix shared by every expected path assertion.
-_S = "nu_library/srcs/"
+def _default_scripts(target):
+    """DefaultInfo.files depset as an ordered list of file names."""
+    return [f.basename for f in target[DefaultInfo].files.to_list()]
 
 # ── TC-01: Empty library (no srcs, no deps) ──────────────────────────────────
 
@@ -34,8 +31,8 @@ def test_empty_library():
     analysis_test(name = "test_empty_library", impl = _test_empty_library_impl, target = "empty_lib")
 
 def _test_empty_library_impl(env, target):
-    scripts = _script_paths(target)
-    default_files = _default_paths(target)
+    scripts = _scripts(target)
+    default_files = _default_scripts(target)
     if scripts != []:
         env.fail("Expected NuInfo.scripts to be empty, got: %s" % scripts)
     if default_files != []:
@@ -48,9 +45,9 @@ def test_srcs_only():
     analysis_test(name = "test_srcs_only", impl = _test_srcs_only_impl, target = "srcs_only_lib")
 
 def _test_srcs_only_impl(env, target):
-    expected = [_S + "a.nu"]
-    scripts = _script_paths(target)
-    default_files = _default_paths(target)
+    expected = ["a.nu"]
+    scripts = _scripts(target)
+    default_files = _default_scripts(target)
     if scripts != expected:
         env.fail("NuInfo.scripts wrong: expected %s, got %s" % (expected, scripts))
     if default_files != expected:
@@ -64,8 +61,8 @@ def test_single_dep_ordering():
     analysis_test(name = "test_single_dep_ordering", impl = _test_single_dep_ordering_impl, target = "single_dep_b")
 
 def _test_single_dep_ordering_impl(env, target):
-    expected = [_S + "a.nu", _S + "b.nu"]
-    scripts = _script_paths(target)
+    expected = ["a.nu", "b.nu"]
+    scripts = _scripts(target)
     if len(scripts) != 2:
         env.fail("Expected 2 scripts, got %d: %s" % (len(scripts), scripts))
     if scripts != expected:
@@ -80,12 +77,12 @@ def test_chain_dep_ordering():
     analysis_test(name = "test_chain_dep_ordering", impl = _test_chain_dep_ordering_impl, target = "chain_c")
 
 def _test_chain_dep_ordering_impl(env, target):
-    expected_scripts = [_S + "a.nu", _S + "b.nu", _S + "c.nu"]
-    expected_default = [_S + "c.nu"]
-    scripts = _script_paths(target)
+    expected_scripts = ["a.nu", "b.nu", "c.nu"]
+    expected_default = ["c.nu"]
+    scripts = _scripts(target)
     if scripts != expected_scripts:
         env.fail("Transitive ordering wrong: expected %s, got %s" % (expected_scripts, scripts))
-    default_files = _default_paths(target)
+    default_files = _default_scripts(target)
     if default_files != expected_default:
         env.fail("DefaultInfo wrong: expected %s, got %s" % (expected_default, default_files))
 
@@ -99,11 +96,11 @@ def test_diamond_dep_ordering():
     analysis_test(name = "test_diamond_dep_ordering", impl = _test_diamond_dep_ordering_impl, target = "diamond_d")
 
 def _test_diamond_dep_ordering_impl(env, target):
-    expected = [_S + "a.nu", _S + "b.nu", _S + "c.nu", _S + "d.nu"]
-    scripts = _script_paths(target)
+    expected = ["a.nu", "b.nu", "c.nu", "d.nu"]
+    scripts = _scripts(target)
     if len(scripts) != 4:
         env.fail("Diamond: expected 4 unique scripts, got %d: %s" % (len(scripts), scripts))
-    a, b, c, d = _S + "a.nu", _S + "b.nu", _S + "c.nu", _S + "d.nu"
+    a, b, c, d = "a.nu", "b.nu", "c.nu", "d.nu"
     if a not in scripts:
         env.fail("a.nu missing: %s" % scripts)
         return
@@ -123,9 +120,9 @@ def test_empty_deps_list():
     analysis_test(name = "test_empty_deps_list", impl = _test_empty_deps_list_impl, target = "empty_deps_lib")
 
 def _test_empty_deps_list_impl(env, target):
-    expected = [_S + "a.nu"]
-    scripts = _script_paths(target)
-    default_files = _default_paths(target)
+    expected = ["a.nu"]
+    scripts = _scripts(target)
+    default_files = _default_scripts(target)
     if scripts != expected:
         env.fail("NuInfo.scripts: expected %s, got %s" % (expected, scripts))
     if default_files != expected:
@@ -139,9 +136,9 @@ def test_defaultinfo_isolation_single_dep():
     analysis_test(name = "test_defaultinfo_isolation_single_dep", impl = _test_defaultinfo_isolation_single_dep_impl, target = "iso_single_b")
 
 def _test_defaultinfo_isolation_single_dep_impl(env, target):
-    expected = [_S + "b.nu"]
-    forbidden = _S + "a.nu"
-    default_files = _default_paths(target)
+    expected = ["b.nu"]
+    forbidden = "a.nu"
+    default_files = _default_scripts(target)
     if default_files != expected:
         env.fail("DefaultInfo.files: expected %s, got %s" % (expected, default_files))
     if forbidden in default_files:
@@ -157,9 +154,9 @@ def test_defaultinfo_isolation_transitive():
     analysis_test(name = "test_defaultinfo_isolation_transitive", impl = _test_defaultinfo_isolation_transitive_impl, target = "iso_trans_d")
 
 def _test_defaultinfo_isolation_transitive_impl(env, target):
-    expected = [_S + "d.nu"]
-    forbidden = [_S + "a.nu", _S + "b.nu", _S + "c.nu"]
-    default_files = _default_paths(target)
+    expected = ["d.nu"]
+    forbidden = ["a.nu", "b.nu", "c.nu"]
+    default_files = _default_scripts(target)
     if len(default_files) != 1:
         env.fail("DefaultInfo.files must have exactly 1 file, got %d: %s" % (len(default_files), default_files))
     if default_files != expected:

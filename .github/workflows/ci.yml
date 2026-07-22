@@ -13,8 +13,7 @@ jobs:
     strategy:
       matrix:
         bazel: ["8.x", "9.x", ".bazelversion"]
-        folder: [".", "nu/tests"]
-      max-parallel: 4
+      max-parallel: 3
       fail-fast: false
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel != '.bazelversion' && matrix.bazel || '' }}
@@ -26,19 +25,12 @@ jobs:
           disk-cache: ${{ github.workflow }}
           repository-cache: true
           cache-save: ${{ github.event_name != 'pull_request' }}
-          module-root: ${{ matrix.folder }}
           bazelrc: |
             common --config=ci
             common --remote_header=x-buildbuddy-api-key=${{ secrets.BB_API_KEY }}
             ${{ matrix.bazel != '.bazelversion' && 'common --lockfile_mode=update' || '' }}
-      - name: "local-only housekeeping"
-        if: matrix.bazel == '.bazelversion' && matrix.folder == '.'
+      - name: "Housekeeping"
+        if: matrix.bazel == '.bazelversion'
         run: bazel test //tools:preset.update_test
-      - name: "build check"
-        if: ${{ matrix.folder == '.' }}
-        run: bazel build //...
-      - name: "module test"
-        if: matrix.folder == 'nu/tests'
-        run: |
-          cd ${{ matrix.folder }}
-          bazel test //...
+      - name: "Run tests"
+        run: bazel test //...

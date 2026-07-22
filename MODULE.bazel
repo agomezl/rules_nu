@@ -15,6 +15,12 @@ register_toolchains("@nu_toolchains//:all")
 bazel_dep(name = "bazelrc-preset.bzl", version = "1.9.2", dev_dependency = True)
 bazel_dep(name = "toolchains_buildbuddy", version = "0.0.4", dev_dependency = True)
 
+bazel_dep(name = "rules_nu_tests", dev_dependency = True)
+local_path_override(
+    module_name = "rules_nu_tests",
+    path = "nu/tests",
+)
+
 buildbuddy = use_extension(
     "@toolchains_buildbuddy//:extensions.bzl",
     "buildbuddy",
