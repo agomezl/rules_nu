@@ -22,7 +22,7 @@ def _nu_info_impl(ctx, scripts, deps):
 
     return {
         "scripts": depset(
-            direct = scripts + symlinks,
+            direct = symlinks,
             transitive = [dep[NuInfo].scripts for dep in deps],
             order = "postorder",
         ),
