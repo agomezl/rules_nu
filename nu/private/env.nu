@@ -1,1 +1,1 @@
-$env.NU_LIB_DIRS ++= [$'(pwd)/_NU_LIBS']
+$env.NU_LIB_DIRS ++= glob **/_NU_LIBS
