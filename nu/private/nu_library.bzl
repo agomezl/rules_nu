@@ -3,7 +3,7 @@ load("//nu/private:providers.bzl", "NuInfo")
 def _nu_library_impl(ctx):
     return [
         DefaultInfo(files = depset(ctx.files.srcs)),
-        NuInfo(scripts = ctx.files.srcs, deps = ctx.attr.deps),
+        NuInfo(ctx, scripts = ctx.files.srcs, deps = ctx.attr.deps),
     ]
 
 nu_library = rule(
