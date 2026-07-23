@@ -7,20 +7,29 @@ def _nu_genrule_impl(ctx):
         "inputs": [f.path for f in ctx.files.inputs],
         "outputs": [f.path for f in ctx.outputs.outputs],
     }
+    config_files = [ctx.file._env_config, ctx.file._config]
     variables_file = ctx.actions.declare_file("%s_env.json" % ctx.label.name)
     ctx.actions.write(
         output = variables_file,
         content = json.encode(variables),
     )
-    all_modules = [t[NuInfo].scripts for t in ctx.attr.modules]
-    all_inputs = depset(ctx.files.inputs + [variables_file], transitive = all_modules)
-
     cmd = "open %s | let bazel; %s" % (variables_file.path, ctx.attr.cmd)
+
+    all_modules = [t[NuInfo].scripts for t in ctx.attr.modules]
+    all_inputs = depset(
+        ctx.files.inputs + [variables_file] + config_files,
+        transitive = all_modules,
+    )
+    args = ctx.actions.args()
+    args.add("--env-config", ctx.file._env_config)
+    args.add("--config", ctx.file._config)
+    args.add("-c", cmd)
+
     ctx.actions.run(
         executable = nu,
         inputs = all_inputs,
         outputs = ctx.outputs.outputs,
-        arguments = ["-n", "-c", cmd],
+        arguments = [args],
     )
 
 nu_genrule = rule(
@@ -43,6 +52,18 @@ nu_genrule = rule(
             doc = "Nushell modules to use in this script",
             allow_empty = True,
             providers = [NuInfo],
+        ),
+        "_env_config": attr.label(
+            doc = "Nushell env.nu file",
+            allow_single_file = [".nu"],
+            mandatory = False,
+            default = "//nu/private:env.nu",
+        ),
+        "_config": attr.label(
+            doc = "Nushell config.nu file",
+            allow_single_file = [".nu"],
+            mandatory = False,
+            default = "//nu/private:config.nu",
         ),
     },
     toolchains = [NUSHELL_TOOLCHAIN_TYPE],
