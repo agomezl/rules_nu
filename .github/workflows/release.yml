@@ -22,6 +22,7 @@ jobs:
       release_files: |
         dist/rules_nu-*.tar.gz
       tag_name: ${{ inputs.tag_name || github.ref_name }}
+      draft: true
     secrets: inherit
   publish:
     needs: release
