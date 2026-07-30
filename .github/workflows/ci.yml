@@ -34,3 +34,6 @@ jobs:
         run: bazel test //tools:preset.update_test
       - name: "Run tests"
         run: bazel test //...
+      - name: "BCR verification"
+        if: matrix.bazel == '.bazelversion'
+        run: bazel run //tools:validate-bcr

@@ -1,0 +1,2 @@
+import %workspace%/rc/bes.bazelrc
+common:ci --build_metadata=ROLE=CI

@@ -1,1 +1,2 @@
-nu/tests
+tests/rules/
+tests/bcr/

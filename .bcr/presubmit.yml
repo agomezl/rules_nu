@@ -1,12 +1,12 @@
 bcr_test_module:
   module_path: "."
   matrix:
-    platform: ["macos_arm64", "ubuntu2004", "windows"]
+    platform: ["macos_arm64", "ubuntu2004"]
     bazel: ["8.x", "9.x"]
   tasks:
-    run_tests:
-      name: "Run test module"
+    verify_targets:
+      name: Verify build targets
       platform: ${{ platform }}
       bazel: ${{ bazel }}
-      test_targets:
-        - "//..."
+      build_targets:
+        - "@rules_nu//..."

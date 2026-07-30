@@ -1,0 +1,8 @@
+module(name = "bcr_tests")
+
+bazel_dep(name = "rules_nu")
+
+archive_override(
+    module_name = "rules_nu",
+    urls = ["file:///tmp/dist/rules_nu-HEAD.tar.gz"],
+)

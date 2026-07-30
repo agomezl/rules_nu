@@ -13,7 +13,5 @@ MODULE.bazel.lock export-ignore
 .bcr/** export-ignore
 tools export-ignore
 tools/ export-ignore
-nu/tests export-ignore
-nu/tests/** export-ignore
-examples export-ignore
-examples/** export-ignore
+tests export-ignore
+tests/** export-ignore
