@@ -25,6 +25,7 @@ jobs:
       draft: true
     secrets: inherit
   publish-to-bcr:
+    if: false # Publish to BCR manually for now
     needs: create-release
     uses: ./.github/workflows/publish.yaml
     with:
