@@ -32,8 +32,11 @@ jobs:
       - name: "Housekeeping"
         if: matrix.bazel == '.bazelversion'
         run: bazel test //tools:preset.update_test
+      - name: "Check build"
+        run: bazel build //...
       - name: "Run tests"
-        run: bazel test //...
+        working-directory: "tests/rules"
+        run: bazel test --lockfile_mode=update //...
       - name: "BCR verification"
         if: matrix.bazel == '.bazelversion'
         run: bazel run //tools:validate-bcr
