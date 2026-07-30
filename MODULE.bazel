@@ -18,7 +18,7 @@ bazel_dep(name = "toolchains_buildbuddy", version = "0.0.4", dev_dependency = Tr
 bazel_dep(name = "rules_nu_tests", dev_dependency = True)
 local_path_override(
     module_name = "rules_nu_tests",
-    path = "nu/tests",
+    path = "tests/rules",
 )
 
 buildbuddy = use_extension(
