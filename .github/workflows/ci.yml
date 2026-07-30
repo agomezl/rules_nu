@@ -36,7 +36,4 @@ jobs:
         run: bazel test //...
       - name: "BCR verification"
         if: matrix.bazel == '.bazelversion'
-        run: |
-          bazel run //tools:release
-          cd tests/bcr
-          bazel build @rules_nu//...
+        run: bazel run //tools:validate-bcr

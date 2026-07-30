@@ -10,3 +10,8 @@ nu_binary(
     name = "release",
     main = "release.nu",
 )
+
+nu_binary(
+    name = "validate-bcr",
+    main = "validate-bcr.nu",
+)
