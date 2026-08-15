@@ -31,7 +31,7 @@ def test_nu_toolchain():
 
     return "nu_toolchain_test"
 
-# ── TC-03: Modules scripts can be loaded  ───────────────────────
+# ── TC-03: Modules scripts can be loaded  ─────────────────────────────────────
 
 def test_module_import():
     nu_binary(
@@ -46,3 +46,18 @@ def test_module_import():
     )
 
     return "module_import_test"
+
+# ── TC-04: Files are available through data ───────────────────────────────────
+def test_data():
+    nu_binary(
+        name = "data",
+        main = "srcs/data.nu",
+        data = ["//:data/data1.txt"],
+    )
+
+    wrapped_binary_test(
+        name = "data_test",
+        binary = ":data",
+    )
+
+    return "data_test"
