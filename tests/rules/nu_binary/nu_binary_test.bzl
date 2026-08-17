@@ -48,6 +48,7 @@ def test_module_import():
     return "module_import_test"
 
 # ── TC-04: Files are available through data ───────────────────────────────────
+
 def test_data():
     nu_binary(
         name = "data",
@@ -61,3 +62,19 @@ def test_data():
     )
 
     return "data_test"
+
+# ── TC-04: tools and their runfiles are available through data ───────────────────────────────────
+
+def test_tools():
+    nu_binary(
+        name = "tools",
+        main = "srcs/tools.nu",
+        tools = [":data"],
+    )
+
+    wrapped_binary_test(
+        name = "tools_test",
+        binary = ":data",
+    )
+
+    return "tools_test"
