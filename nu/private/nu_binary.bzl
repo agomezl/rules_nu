@@ -9,7 +9,7 @@ def _nu_binary_impl(ctx):
     inputs = [nu, ctx.file.main, ctx.file._config, ctx.file._env_config]
     runfiles = ctx.runfiles(
         files = inputs,
-        transitive_file = data_inputs,
+        transitive_files = data_inputs,
     )
     runfiles = runfiles.merge_all([dep[NuInfo].runfiles for dep in ctx.attr.deps])
     runfiles = runfiles.merge_all([dep[DefaultInfo].default_runfiles for dep in ctx.attr.data])
@@ -69,6 +69,7 @@ nu_binary = rule(
         ),
         "data": attr.label_list(
             doc = "Additional data files to include in the runfiles",
+            allow_files = True,
         ),
         "_env_config": attr.label(
             doc = "Nushell env.nu file",
