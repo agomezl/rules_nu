@@ -58,13 +58,6 @@ nu_genrule = rule(
             doc = "Additional files which are available to the nu shell command",
             allow_files = True,
         ),
-        "tools": attr.label_list(
-            doc = """
-            Executable targets which are available to the nu shell command.
-            Runfiles are also automatically made available.
-            """,
-            cfg = "exec",
-        ),
         "_env_config": attr.label(
             doc = "Nushell env.nu file",
             allow_single_file = [".nu"],

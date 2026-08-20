@@ -182,21 +182,3 @@ def test_data():
         **_TEST_ATTRS
     )
     return "data_test"
-
-def test_tools():
-    nu_genrule(
-        name = "tools",
-        cmd = r"""
-
-        """,
-        outputs = [":tools.out"],
-        tools = ["//nu_binary"],
-        **_TEST_ATTRS
-    )
-
-    build_test(
-        name = "tools_test",
-        targets = [":tools"],
-        **_TEST_ATTRS
-    )
-    return "tools_test"

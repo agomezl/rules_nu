@@ -12,7 +12,6 @@ def _nu_binary_impl(ctx):
         transitive_files = data_inputs,
     )
     runfiles = runfiles.merge_all([dep[NuInfo].runfiles for dep in ctx.attr.deps])
-    runfiles = runfiles.merge_all([dep[DefaultInfo].default_runfiles for dep in ctx.attr.tools])
 
     embedded, transformed = launcher.args_from_entrypoint(nu)
     embedded, transformed = launcher.append_embedded_arg(
@@ -70,13 +69,6 @@ nu_binary = rule(
         "data": attr.label_list(
             doc = "Additional data files to include in the runfiles",
             allow_files = True,
-        ),
-        "tools": attr.label_list(
-            doc = """
-            Executable targets which are available to the nu shell command.
-            Runfiles are also automatically made available.
-            """,
-            cfg = "target",
         ),
         "_env_config": attr.label(
             doc = "Nushell env.nu file",

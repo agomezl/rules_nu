@@ -4,7 +4,6 @@ load(
     "test_module_import",
     "test_nu_toolchain",
     "test_simple_binary",
-    "test_tools",
 )
 
 test_suite(
@@ -14,7 +13,6 @@ test_suite(
         test_nu_toolchain(),
         test_module_import(),
         test_data(),
-        test_tools(),
     ],
     visibility = ["//visibility:public"],
 )
