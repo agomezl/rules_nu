@@ -1,5 +1,6 @@
 load(
     ":nu_genrule_test.bzl",
+    "test_data",
     "test_inputs_multiple",
     "test_inputs_single",
     "test_modules_available",
@@ -17,6 +18,7 @@ test_suite(
         test_outputs_multiple(),
         test_modules_available(),
         test_nu_exe(),
+        test_data(),
     ],
     visibility = ["//visibility:public"],
 )

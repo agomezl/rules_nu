@@ -19,7 +19,7 @@ def test_inputs_single():
             }
             "ok" | save $bazel.outputs.0
         """,
-        inputs = ["fixtures/input.txt"],
+        inputs = ["//:fixtures/input.txt"],
         outputs = [":inputs_single.out"],
         **_TEST_ATTRS
     )
@@ -71,8 +71,8 @@ def test_inputs_multiple():
             "ok" | save $bazel.outputs.0
         """,
         inputs = [
-            "fixtures/input1.txt",
-            "fixtures/input2.txt",
+            "//:fixtures/input1.txt",
+            "//:fixtures/input2.txt",
         ],
         outputs = [":inputs_multiple.out"],
         **_TEST_ATTRS
@@ -157,3 +157,46 @@ def test_nu_exe():
         **_TEST_ATTRS
     )
     return "nu_exe_test"
+
+def test_data():
+    nu_genrule(
+        name = "data",
+        cmd = r"""
+        let data = open "data/data1.txt"
+
+        if $data == "Some Data!\n" {
+            echo "Ok" | save $bazel.outputs.0
+            exit 0
+        } else {
+            exit 1
+        }
+        """,
+        outputs = [":data.out"],
+        data = ["//:data/data1.txt"],
+        **_TEST_ATTRS
+    )
+
+    build_test(
+        name = "data_test",
+        targets = [":data"],
+        **_TEST_ATTRS
+    )
+    return "data_test"
+
+def test_tools():
+    nu_genrule(
+        name = "tools",
+        cmd = r"""
+
+        """,
+        outputs = [":tools.out"],
+        tools = ["//nu_binary"],
+        **_TEST_ATTRS
+    )
+
+    build_test(
+        name = "tools_test",
+        targets = [":tools"],
+        **_TEST_ATTRS
+    )
+    return "tools_test"

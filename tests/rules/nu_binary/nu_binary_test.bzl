@@ -6,7 +6,7 @@ load("//:utils.bzl", "wrapped_binary_test")
 def test_simple_binary():
     nu_binary(
         name = "hello",
-        main = "srcs/hello.nu",
+        main = "//:srcs/hello.nu",
     )
 
     wrapped_binary_test(
@@ -21,7 +21,7 @@ def test_simple_binary():
 def test_nu_toolchain():
     nu_binary(
         name = "nu_toolchain",
-        main = "srcs/check_toolchain.nu",
+        main = "//:srcs/check_toolchain.nu",
     )
 
     wrapped_binary_test(
@@ -36,7 +36,7 @@ def test_nu_toolchain():
 def test_module_import():
     nu_binary(
         name = "module_import",
-        main = "srcs/modules.nu",
+        main = "//:srcs/modules.nu",
         deps = ["//:math"],
     )
 
@@ -52,7 +52,7 @@ def test_module_import():
 def test_data():
     nu_binary(
         name = "data",
-        main = "srcs/data.nu",
+        main = "//:srcs/data.nu",
         data = ["//:data/data1.txt"],
     )
 
@@ -68,13 +68,13 @@ def test_data():
 def test_tools():
     nu_binary(
         name = "tools",
-        main = "srcs/tools.nu",
+        main = "//:srcs/tools.nu",
         tools = [":data"],
     )
 
     wrapped_binary_test(
         name = "tools_test",
-        binary = ":data",
+        binary = ":tools",
     )
 
     return "tools_test"

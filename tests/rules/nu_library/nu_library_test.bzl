@@ -41,7 +41,7 @@ def _test_empty_library_impl(env, target):
 # ── TC-02: Srcs only (no deps) ───────────────────────────────────────────────
 
 def test_srcs_only():
-    nu_library(name = "srcs_only_lib", srcs = ["srcs/a.nu"])
+    nu_library(name = "srcs_only_lib", srcs = ["//:srcs/a.nu"])
     analysis_test(name = "test_srcs_only", impl = _test_srcs_only_impl, target = "srcs_only_lib")
 
 def _test_srcs_only_impl(env, target):
@@ -56,8 +56,8 @@ def _test_srcs_only_impl(env, target):
 # ── TC-03: Single dependency — dep script appears before own script ───────────
 
 def test_single_dep_ordering():
-    nu_library(name = "single_dep_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "single_dep_b", srcs = ["srcs/b.nu"], deps = ["single_dep_a"])
+    nu_library(name = "single_dep_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "single_dep_b", srcs = ["//:srcs/b.nu"], deps = ["single_dep_a"])
     analysis_test(name = "test_single_dep_ordering", impl = _test_single_dep_ordering_impl, target = "single_dep_b")
 
 def _test_single_dep_ordering_impl(env, target):
@@ -71,9 +71,9 @@ def _test_single_dep_ordering_impl(env, target):
 # ── TC-04: 3-level chain — deepest dep first ─────────────────────────────────
 
 def test_chain_dep_ordering():
-    nu_library(name = "chain_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "chain_b", srcs = ["srcs/b.nu"], deps = ["chain_a"])
-    nu_library(name = "chain_c", srcs = ["srcs/c.nu"], deps = ["chain_b"])
+    nu_library(name = "chain_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "chain_b", srcs = ["//:srcs/b.nu"], deps = ["chain_a"])
+    nu_library(name = "chain_c", srcs = ["//:srcs/c.nu"], deps = ["chain_b"])
     analysis_test(name = "test_chain_dep_ordering", impl = _test_chain_dep_ordering_impl, target = "chain_c")
 
 def _test_chain_dep_ordering_impl(env, target):
@@ -89,10 +89,10 @@ def _test_chain_dep_ordering_impl(env, target):
 # ── TC-05: Diamond — a.nu deduplicated and ordered before b.nu / c.nu ────────
 
 def test_diamond_dep_ordering():
-    nu_library(name = "diamond_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "diamond_b", srcs = ["srcs/b.nu"], deps = ["diamond_a"])
-    nu_library(name = "diamond_c", srcs = ["srcs/c.nu"], deps = ["diamond_a"])
-    nu_library(name = "diamond_d", srcs = ["srcs/d.nu"], deps = ["diamond_b", "diamond_c"])
+    nu_library(name = "diamond_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "diamond_b", srcs = ["//:srcs/b.nu"], deps = ["diamond_a"])
+    nu_library(name = "diamond_c", srcs = ["//:srcs/c.nu"], deps = ["diamond_a"])
+    nu_library(name = "diamond_d", srcs = ["//:srcs/d.nu"], deps = ["diamond_b", "diamond_c"])
     analysis_test(name = "test_diamond_dep_ordering", impl = _test_diamond_dep_ordering_impl, target = "diamond_d")
 
 def _test_diamond_dep_ordering_impl(env, target):
@@ -116,7 +116,7 @@ def _test_diamond_dep_ordering_impl(env, target):
 # ── TC-06: Explicit deps=[] behaves identically to no deps ───────────────────
 
 def test_empty_deps_list():
-    nu_library(name = "empty_deps_lib", srcs = ["srcs/a.nu"], deps = [])
+    nu_library(name = "empty_deps_lib", srcs = ["//:srcs/a.nu"], deps = [])
     analysis_test(name = "test_empty_deps_list", impl = _test_empty_deps_list_impl, target = "empty_deps_lib")
 
 def _test_empty_deps_list_impl(env, target):
@@ -131,8 +131,8 @@ def _test_empty_deps_list_impl(env, target):
 # ── TC-07: DefaultInfo isolation — transitive dep must not appear ─────────────
 
 def test_defaultinfo_isolation_single_dep():
-    nu_library(name = "iso_single_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "iso_single_b", srcs = ["srcs/b.nu"], deps = ["iso_single_a"])
+    nu_library(name = "iso_single_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "iso_single_b", srcs = ["//:srcs/b.nu"], deps = ["iso_single_a"])
     analysis_test(name = "test_defaultinfo_isolation_single_dep", impl = _test_defaultinfo_isolation_single_dep_impl, target = "iso_single_b")
 
 def _test_defaultinfo_isolation_single_dep_impl(env, target):
@@ -147,10 +147,10 @@ def _test_defaultinfo_isolation_single_dep_impl(env, target):
 # ── TC-08: DefaultInfo isolation — full diamond, only direct src present ──────
 
 def test_defaultinfo_isolation_transitive():
-    nu_library(name = "iso_trans_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "iso_trans_b", srcs = ["srcs/b.nu"], deps = ["iso_trans_a"])
-    nu_library(name = "iso_trans_c", srcs = ["srcs/c.nu"], deps = ["iso_trans_a"])
-    nu_library(name = "iso_trans_d", srcs = ["srcs/d.nu"], deps = ["iso_trans_b", "iso_trans_c"])
+    nu_library(name = "iso_trans_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "iso_trans_b", srcs = ["//:srcs/b.nu"], deps = ["iso_trans_a"])
+    nu_library(name = "iso_trans_c", srcs = ["//:srcs/c.nu"], deps = ["iso_trans_a"])
+    nu_library(name = "iso_trans_d", srcs = ["//:srcs/d.nu"], deps = ["iso_trans_b", "iso_trans_c"])
     analysis_test(name = "test_defaultinfo_isolation_transitive", impl = _test_defaultinfo_isolation_transitive_impl, target = "iso_trans_d")
 
 def _test_defaultinfo_isolation_transitive_impl(env, target):
