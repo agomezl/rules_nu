@@ -34,6 +34,8 @@ def test_empty_library():
     nu_library(name = "empty_lib", srcs = [])
     analysis_test(name = "test_empty_library", impl = _test_empty_library_impl, target = "empty_lib")
 
+    return "test_empty_library"
+
 def _test_empty_library_impl(env, target):
     scripts = _scripts(target)
     default_files = _default_scripts(target)
@@ -47,6 +49,8 @@ def _test_empty_library_impl(env, target):
 def test_srcs_only():
     nu_library(name = "srcs_only_lib", srcs = ["//:srcs/a.nu"])
     analysis_test(name = "test_srcs_only", impl = _test_srcs_only_impl, target = "srcs_only_lib")
+
+    return "test_srcs_only"
 
 def _test_srcs_only_impl(env, target):
     expected = ["a.nu"]
@@ -64,6 +68,8 @@ def test_single_dep_ordering():
     nu_library(name = "single_dep_b", srcs = ["//:srcs/b.nu"], deps = ["single_dep_a"])
     analysis_test(name = "test_single_dep_ordering", impl = _test_single_dep_ordering_impl, target = "single_dep_b")
 
+    return "test_single_dep_ordering"
+
 def _test_single_dep_ordering_impl(env, target):
     expected = ["a.nu", "b.nu"]
     scripts = _scripts(target)
@@ -79,6 +85,8 @@ def test_chain_dep_ordering():
     nu_library(name = "chain_b", srcs = ["//:srcs/b.nu"], deps = ["chain_a"])
     nu_library(name = "chain_c", srcs = ["//:srcs/c.nu"], deps = ["chain_b"])
     analysis_test(name = "test_chain_dep_ordering", impl = _test_chain_dep_ordering_impl, target = "chain_c")
+
+    return "test_chain_dep_ordering"
 
 def _test_chain_dep_ordering_impl(env, target):
     expected_scripts = ["a.nu", "b.nu", "c.nu"]
@@ -98,6 +106,8 @@ def test_diamond_dep_ordering():
     nu_library(name = "diamond_c", srcs = ["//:srcs/c.nu"], deps = ["diamond_a"])
     nu_library(name = "diamond_d", srcs = ["//:srcs/d.nu"], deps = ["diamond_b", "diamond_c"])
     analysis_test(name = "test_diamond_dep_ordering", impl = _test_diamond_dep_ordering_impl, target = "diamond_d")
+
+    return "test_diamond_dep_ordering"
 
 def _test_diamond_dep_ordering_impl(env, target):
     expected = ["a.nu", "b.nu", "c.nu", "d.nu"]
@@ -126,6 +136,8 @@ def test_empty_deps_list():
     nu_library(name = "empty_deps_lib", srcs = ["//:srcs/a.nu"], deps = [])
     analysis_test(name = "test_empty_deps_list", impl = _test_empty_deps_list_impl, target = "empty_deps_lib")
 
+    return "test_empty_deps_list"
+
 def _test_empty_deps_list_impl(env, target):
     expected = ["a.nu"]
     scripts = _scripts(target)
@@ -141,6 +153,8 @@ def test_defaultinfo_isolation_single_dep():
     nu_library(name = "iso_single_a", srcs = ["//:srcs/a.nu"])
     nu_library(name = "iso_single_b", srcs = ["//:srcs/b.nu"], deps = ["iso_single_a"])
     analysis_test(name = "test_defaultinfo_isolation_single_dep", impl = _test_defaultinfo_isolation_single_dep_impl, target = "iso_single_b")
+
+    return "test_defaultinfo_isolation_single_dep"
 
 def _test_defaultinfo_isolation_single_dep_impl(env, target):
     expected = ["b.nu"]
@@ -160,6 +174,8 @@ def test_defaultinfo_isolation_transitive():
     nu_library(name = "iso_trans_d", srcs = ["//:srcs/d.nu"], deps = ["iso_trans_b", "iso_trans_c"])
     analysis_test(name = "test_defaultinfo_isolation_transitive", impl = _test_defaultinfo_isolation_transitive_impl, target = "iso_trans_d")
 
+    return "test_defaultinfo_isolation_transitive"
+
 def _test_defaultinfo_isolation_transitive_impl(env, target):
     expected = ["d.nu"]
     forbidden = ["a.nu", "b.nu", "c.nu"]
@@ -176,6 +192,8 @@ def _test_defaultinfo_isolation_transitive_impl(env, target):
 def test_extra_data_files():
     nu_library(name = "extra_data", srcs = ["//:srcs/a.nu"], data = ["//:data/extra.txt"])
     analysis_test(name = "test_extra_data_files", impl = _test_extra_data_files_impl, target = "extra_data")
+
+    return "test_extra_data_files"
 
 def _test_extra_data_files_impl(env, target):
     expected = ["extra.txt"]
@@ -199,6 +217,8 @@ def test_extra_data_files_from_deps():
         data = ["//:data/extra.txt"],
     )
     analysis_test(name = "test_extra_data_files_from_deps", impl = _test_extra_data_files_from_deps_impl, target = "extra_data_from_deps")
+
+    return "test_extra_data_files_from_deps"
 
 def _test_extra_data_files_from_deps_impl(env, target):
     expected = ["extra2.txt", "extra.txt"]
