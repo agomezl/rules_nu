@@ -2,7 +2,7 @@ module(
     name = "rules_nu",
 )
 
-bazel_dep(name = "hermetic_launcher", version = "0.0.8")
+bazel_dep(name = "hermetic_launcher", version = "0.0.15")
 bazel_dep(name = "platforms", version = "1.1.0")
 
 nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
