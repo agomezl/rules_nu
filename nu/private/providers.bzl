@@ -4,7 +4,7 @@ def _format_library_path(file):
         file.owner.name,
     )
 
-def _nu_info_impl(ctx, scripts, deps):
+def _nu_info_impl(ctx, *, scripts, deps, data):
     if not all([NuInfo in dep for dep in deps]):
         fail("All dependencies must be NuInfo providers")
 
@@ -15,7 +15,7 @@ def _nu_info_impl(ctx, scripts, deps):
         ctx.actions.symlink(output = symlink, target_file = script)
 
     runfiles = ctx.runfiles(
-        files = scripts,
+        files = scripts + data,
         symlinks = {_format_library_path(f): f for f in scripts},
     )
     runfiles = runfiles.merge_all([dep[NuInfo].runfiles for dep in deps])
@@ -26,6 +26,11 @@ def _nu_info_impl(ctx, scripts, deps):
             transitive = [dep[NuInfo].scripts for dep in deps],
             order = "postorder",
         ),
+        "data": depset(
+            direct = data,
+            transitive = [dep[NuInfo].data for dep in deps],
+            order = "postorder",
+        ),
         "runfiles": runfiles,
     }
 
@@ -34,6 +39,9 @@ NuInfo, _new_nu_info = provider(
     fields = {
         "scripts": """
         The set of nushell scripts to include/use in dependency order
+        """,
+        "data": """
+        Any additional data files the library needs
         """,
         "runfiles": """
         The runfiles for the nushell binary

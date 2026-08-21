@@ -10,15 +10,19 @@ Verified properties:
      DefaultInfo.files, which carries only the target's direct srcs.
 """
 
-load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 load("@rules_nu//nu:rules.bzl", "nu_library")
 load("@rules_nu//nu/private:providers.bzl", "NuInfo")
+load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
 
 # ── Shared helpers ────────────────────────────────────────────────────────────
 
 def _scripts(target):
     """NuInfo.scripts depset as an ordered list of file names."""
     return [f.basename for f in target[NuInfo].scripts.to_list()]
+
+def _data(target):
+    """NuInfo.data depset as an ordered list of file names."""
+    return [f.basename for f in target[NuInfo].data.to_list()]
 
 def _default_scripts(target):
     """DefaultInfo.files depset as an ordered list of file names."""
@@ -29,6 +33,8 @@ def _default_scripts(target):
 def test_empty_library():
     nu_library(name = "empty_lib", srcs = [])
     analysis_test(name = "test_empty_library", impl = _test_empty_library_impl, target = "empty_lib")
+
+    return "test_empty_library"
 
 def _test_empty_library_impl(env, target):
     scripts = _scripts(target)
@@ -41,8 +47,10 @@ def _test_empty_library_impl(env, target):
 # ── TC-02: Srcs only (no deps) ───────────────────────────────────────────────
 
 def test_srcs_only():
-    nu_library(name = "srcs_only_lib", srcs = ["srcs/a.nu"])
+    nu_library(name = "srcs_only_lib", srcs = ["//:srcs/a.nu"])
     analysis_test(name = "test_srcs_only", impl = _test_srcs_only_impl, target = "srcs_only_lib")
+
+    return "test_srcs_only"
 
 def _test_srcs_only_impl(env, target):
     expected = ["a.nu"]
@@ -56,9 +64,11 @@ def _test_srcs_only_impl(env, target):
 # ── TC-03: Single dependency — dep script appears before own script ───────────
 
 def test_single_dep_ordering():
-    nu_library(name = "single_dep_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "single_dep_b", srcs = ["srcs/b.nu"], deps = ["single_dep_a"])
+    nu_library(name = "single_dep_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "single_dep_b", srcs = ["//:srcs/b.nu"], deps = ["single_dep_a"])
     analysis_test(name = "test_single_dep_ordering", impl = _test_single_dep_ordering_impl, target = "single_dep_b")
+
+    return "test_single_dep_ordering"
 
 def _test_single_dep_ordering_impl(env, target):
     expected = ["a.nu", "b.nu"]
@@ -71,10 +81,12 @@ def _test_single_dep_ordering_impl(env, target):
 # ── TC-04: 3-level chain — deepest dep first ─────────────────────────────────
 
 def test_chain_dep_ordering():
-    nu_library(name = "chain_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "chain_b", srcs = ["srcs/b.nu"], deps = ["chain_a"])
-    nu_library(name = "chain_c", srcs = ["srcs/c.nu"], deps = ["chain_b"])
+    nu_library(name = "chain_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "chain_b", srcs = ["//:srcs/b.nu"], deps = ["chain_a"])
+    nu_library(name = "chain_c", srcs = ["//:srcs/c.nu"], deps = ["chain_b"])
     analysis_test(name = "test_chain_dep_ordering", impl = _test_chain_dep_ordering_impl, target = "chain_c")
+
+    return "test_chain_dep_ordering"
 
 def _test_chain_dep_ordering_impl(env, target):
     expected_scripts = ["a.nu", "b.nu", "c.nu"]
@@ -89,11 +101,13 @@ def _test_chain_dep_ordering_impl(env, target):
 # ── TC-05: Diamond — a.nu deduplicated and ordered before b.nu / c.nu ────────
 
 def test_diamond_dep_ordering():
-    nu_library(name = "diamond_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "diamond_b", srcs = ["srcs/b.nu"], deps = ["diamond_a"])
-    nu_library(name = "diamond_c", srcs = ["srcs/c.nu"], deps = ["diamond_a"])
-    nu_library(name = "diamond_d", srcs = ["srcs/d.nu"], deps = ["diamond_b", "diamond_c"])
+    nu_library(name = "diamond_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "diamond_b", srcs = ["//:srcs/b.nu"], deps = ["diamond_a"])
+    nu_library(name = "diamond_c", srcs = ["//:srcs/c.nu"], deps = ["diamond_a"])
+    nu_library(name = "diamond_d", srcs = ["//:srcs/d.nu"], deps = ["diamond_b", "diamond_c"])
     analysis_test(name = "test_diamond_dep_ordering", impl = _test_diamond_dep_ordering_impl, target = "diamond_d")
+
+    return "test_diamond_dep_ordering"
 
 def _test_diamond_dep_ordering_impl(env, target):
     expected = ["a.nu", "b.nu", "c.nu", "d.nu"]
@@ -104,8 +118,11 @@ def _test_diamond_dep_ordering_impl(env, target):
     if a not in scripts:
         env.fail("a.nu missing: %s" % scripts)
         return
-    ia, ib = scripts.index(a), scripts.index(b) if b in scripts else len(scripts)
-    ic, id_ = scripts.index(c) if c in scripts else len(scripts), scripts.index(d) if d in scripts else len(scripts)
+    ia = scripts.index(a)
+    ib = scripts.index(b) if b in scripts else len(scripts)
+    ic = scripts.index(c) if c in scripts else len(scripts)
+    id_ = scripts.index(d) if d in scripts else len(scripts)
+
     if not (ia < ib and ia < ic):
         env.fail("a.nu must appear before b.nu and c.nu: %s" % scripts)
     if not (ib < id_ and ic < id_):
@@ -116,8 +133,10 @@ def _test_diamond_dep_ordering_impl(env, target):
 # ── TC-06: Explicit deps=[] behaves identically to no deps ───────────────────
 
 def test_empty_deps_list():
-    nu_library(name = "empty_deps_lib", srcs = ["srcs/a.nu"], deps = [])
+    nu_library(name = "empty_deps_lib", srcs = ["//:srcs/a.nu"], deps = [])
     analysis_test(name = "test_empty_deps_list", impl = _test_empty_deps_list_impl, target = "empty_deps_lib")
+
+    return "test_empty_deps_list"
 
 def _test_empty_deps_list_impl(env, target):
     expected = ["a.nu"]
@@ -131,9 +150,11 @@ def _test_empty_deps_list_impl(env, target):
 # ── TC-07: DefaultInfo isolation — transitive dep must not appear ─────────────
 
 def test_defaultinfo_isolation_single_dep():
-    nu_library(name = "iso_single_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "iso_single_b", srcs = ["srcs/b.nu"], deps = ["iso_single_a"])
+    nu_library(name = "iso_single_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "iso_single_b", srcs = ["//:srcs/b.nu"], deps = ["iso_single_a"])
     analysis_test(name = "test_defaultinfo_isolation_single_dep", impl = _test_defaultinfo_isolation_single_dep_impl, target = "iso_single_b")
+
+    return "test_defaultinfo_isolation_single_dep"
 
 def _test_defaultinfo_isolation_single_dep_impl(env, target):
     expected = ["b.nu"]
@@ -147,11 +168,13 @@ def _test_defaultinfo_isolation_single_dep_impl(env, target):
 # ── TC-08: DefaultInfo isolation — full diamond, only direct src present ──────
 
 def test_defaultinfo_isolation_transitive():
-    nu_library(name = "iso_trans_a", srcs = ["srcs/a.nu"])
-    nu_library(name = "iso_trans_b", srcs = ["srcs/b.nu"], deps = ["iso_trans_a"])
-    nu_library(name = "iso_trans_c", srcs = ["srcs/c.nu"], deps = ["iso_trans_a"])
-    nu_library(name = "iso_trans_d", srcs = ["srcs/d.nu"], deps = ["iso_trans_b", "iso_trans_c"])
+    nu_library(name = "iso_trans_a", srcs = ["//:srcs/a.nu"])
+    nu_library(name = "iso_trans_b", srcs = ["//:srcs/b.nu"], deps = ["iso_trans_a"])
+    nu_library(name = "iso_trans_c", srcs = ["//:srcs/c.nu"], deps = ["iso_trans_a"])
+    nu_library(name = "iso_trans_d", srcs = ["//:srcs/d.nu"], deps = ["iso_trans_b", "iso_trans_c"])
     analysis_test(name = "test_defaultinfo_isolation_transitive", impl = _test_defaultinfo_isolation_transitive_impl, target = "iso_trans_d")
+
+    return "test_defaultinfo_isolation_transitive"
 
 def _test_defaultinfo_isolation_transitive_impl(env, target):
     expected = ["d.nu"]
@@ -164,3 +187,43 @@ def _test_defaultinfo_isolation_transitive_impl(env, target):
     for f in forbidden:
         if f in default_files:
             env.fail("Transitive file %s must NOT be in DefaultInfo.files" % f)
+
+# ── TC-09: Extra data files
+def test_extra_data_files():
+    nu_library(name = "extra_data", srcs = ["//:srcs/a.nu"], data = ["//:data/extra.txt"])
+    analysis_test(name = "test_extra_data_files", impl = _test_extra_data_files_impl, target = "extra_data")
+
+    return "test_extra_data_files"
+
+def _test_extra_data_files_impl(env, target):
+    expected = ["extra.txt"]
+    default_files = _data(target)
+    if len(default_files) != 1:
+        env.fail("DefaultInfo.files must have exactly 1 file, got %d: %s" % (len(default_files), default_files))
+    if default_files != expected:
+        env.fail("DefaultInfo.files: expected %s, got %s" % (expected, default_files))
+
+# ── TC-10: Extra data files from deps
+def test_extra_data_files_from_deps():
+    nu_library(
+        name = "dep_with_data",
+        srcs = ["//:srcs/b.nu"],
+        data = ["//:data/extra2.txt"],
+    )
+    nu_library(
+        name = "extra_data_from_deps",
+        srcs = ["//:srcs/a.nu"],
+        deps = ["dep_with_data"],
+        data = ["//:data/extra.txt"],
+    )
+    analysis_test(name = "test_extra_data_files_from_deps", impl = _test_extra_data_files_from_deps_impl, target = "extra_data_from_deps")
+
+    return "test_extra_data_files_from_deps"
+
+def _test_extra_data_files_from_deps_impl(env, target):
+    expected = ["extra2.txt", "extra.txt"]
+    default_files = _data(target)
+    if len(default_files) != 2:
+        env.fail("DefaultInfo.files must have exactly 2 files, got %d: %s" % (len(default_files), default_files))
+    if default_files != expected:
+        env.fail("DefaultInfo.files: expected %s, got %s" % (expected, default_files))

@@ -4,10 +4,6 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_nu//nu:rules.bzl", "nu_genrule", "nu_library")
 
-_TEST_ATTRS = {
-    "tags": ["manual"],
-}
-
 # ── TC-01: Single input appears in $bazel.inputs ──────────────────────────────
 
 def test_inputs_single():
@@ -19,15 +15,13 @@ def test_inputs_single():
             }
             "ok" | save $bazel.outputs.0
         """,
-        inputs = ["fixtures/input.txt"],
+        inputs = ["//:fixtures/input.txt"],
         outputs = [":inputs_single.out"],
-        **_TEST_ATTRS
     )
 
     build_test(
         name = "inputs_single_test",
         targets = [":inputs_single"],
-        **_TEST_ATTRS
     )
     return "inputs_single_test"
 
@@ -43,13 +37,11 @@ def test_outputs_single():
             "ok" | save $bazel.outputs.0
         """,
         outputs = [":outputs_single.out"],
-        **_TEST_ATTRS
     )
 
     build_test(
         name = "outputs_single_test",
         targets = [":outputs_single"],
-        **_TEST_ATTRS
     )
     return "outputs_single_test"
 
@@ -71,17 +63,15 @@ def test_inputs_multiple():
             "ok" | save $bazel.outputs.0
         """,
         inputs = [
-            "fixtures/input1.txt",
-            "fixtures/input2.txt",
+            "//:fixtures/input1.txt",
+            "//:fixtures/input2.txt",
         ],
         outputs = [":inputs_multiple.out"],
-        **_TEST_ATTRS
     )
 
     build_test(
         name = "inputs_multiple_test",
         targets = [":inputs_multiple"],
-        **_TEST_ATTRS
     )
     return "inputs_multiple_test"
 
@@ -101,13 +91,11 @@ def test_outputs_multiple():
             ":outputs_multiple_a.out",
             ":outputs_multiple_b.out",
         ],
-        **_TEST_ATTRS
     )
 
     build_test(
         name = "outputs_multiple_test",
         targets = [":outputs_multiple"],
-        **_TEST_ATTRS
     )
     return "outputs_multiple_test"
 
@@ -125,13 +113,11 @@ def test_modules_available():
         """,
         modules = ["//:math"],
         outputs = [":modules_available.out"],
-        **_TEST_ATTRS
     )
 
     build_test(
         name = "modules_available_test",
         targets = [":modules_available"],
-        **_TEST_ATTRS
     )
     return "modules_available_test"
 
@@ -148,12 +134,65 @@ def test_nu_exe():
             }
             "ok" | save $bazel.outputs.0""",
         outputs = [":nu_exe.out"],
-        **_TEST_ATTRS
     )
 
     build_test(
         name = "nu_exe_test",
         targets = [":nu_exe"],
-        **_TEST_ATTRS
     )
     return "nu_exe_test"
+
+# ── TC-07: Data is available ──────────────────────────────────────────────────
+
+def test_data():
+    nu_genrule(
+        name = "data",
+        cmd = r"""
+        let data = open "data/data1.txt"
+
+        if $data == "Some Data!\n" {
+            echo "Ok" | save $bazel.outputs.0
+            exit 0
+        } else {
+            exit 1
+        }
+        """,
+        outputs = [":data.out"],
+        data = ["//:data/data1.txt"],
+    )
+
+    build_test(
+        name = "data_test",
+        targets = [":data"],
+    )
+    return "data_test"
+
+# ── TC-08: Transitive data is available ───────────────────────────────────────
+
+def test_transitive_data():
+    nu_library(
+        name = "data1",
+        srcs = ["//:srcs/a.nu"],
+        data = ["//:data/data1.txt"],
+    )
+    nu_genrule(
+        name = "transitive_data",
+        cmd = r"""
+        let data = open "data/data1.txt"
+
+        if $data == "Some Data!\n" {
+            echo "Ok" | save $bazel.outputs.0
+            exit 0
+        } else {
+            exit 1
+        }
+        """,
+        outputs = [":transitive_data.out"],
+        modules = [":data1"],
+    )
+
+    build_test(
+        name = "transitive_data_test",
+        targets = [":transitive_data"],
+    )
+    return "transitive_data_test"

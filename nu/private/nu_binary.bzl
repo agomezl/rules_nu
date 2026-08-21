@@ -5,8 +5,15 @@ load("//nu/toolchains:defs.bzl", "NUSHELL_TOOLCHAIN_TYPE")
 def _nu_binary_impl(ctx):
     nu = ctx.toolchains[NUSHELL_TOOLCHAIN_TYPE].nu
     exe = ctx.actions.declare_file(ctx.label.name)
+    data_inputs = [dep[DefaultInfo].files for dep in ctx.attr.data]
+    module_inputs = [dep[NuInfo].data for dep in ctx.attr.deps]
     inputs = [nu, ctx.file.main, ctx.file._config, ctx.file._env_config]
-    runfiles = ctx.runfiles(files = inputs)
+    runfiles = ctx.runfiles(
+        files = inputs,
+        transitive_files = depset(
+            transitive = data_inputs + module_inputs,
+        ),
+    )
     runfiles = runfiles.merge_all([dep[NuInfo].runfiles for dep in ctx.attr.deps])
 
     embedded, transformed = launcher.args_from_entrypoint(nu)
@@ -61,6 +68,10 @@ nu_binary = rule(
         "deps": attr.label_list(
             doc = "Nushell module dependencies",
             providers = [NuInfo],
+        ),
+        "data": attr.label_list(
+            doc = "Additional data files to include in the runfiles",
+            allow_files = True,
         ),
         "_env_config": attr.label(
             doc = "Nushell env.nu file",

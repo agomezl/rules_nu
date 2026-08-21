@@ -15,10 +15,12 @@ def _nu_genrule_impl(ctx):
     )
     cmd = "open %s | let bazel; %s" % (variables_file.path, ctx.attr.cmd)
 
-    all_modules = [t[NuInfo].scripts for t in ctx.attr.modules]
+    module_inputs = [t[NuInfo].scripts for t in ctx.attr.modules]
+    module_data_inputs = [t[NuInfo].data for t in ctx.attr.modules]
+    data_inputs = [dep[DefaultInfo].files for dep in ctx.attr.data]
     all_inputs = depset(
         ctx.files.inputs + [variables_file] + config_files,
-        transitive = all_modules,
+        transitive = module_inputs + module_data_inputs + data_inputs,
     )
     args = ctx.actions.args()
     args.add("--env-config", ctx.file._env_config)
@@ -52,6 +54,10 @@ nu_genrule = rule(
             doc = "Nushell modules to use in this script",
             allow_empty = True,
             providers = [NuInfo],
+        ),
+        "data": attr.label_list(
+            doc = "Additional files which are available to the nu shell command",
+            allow_files = True,
         ),
         "_env_config": attr.label(
             doc = "Nushell env.nu file",

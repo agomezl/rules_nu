@@ -1,4 +1,4 @@
-load("@rules_nu//nu:rules.bzl", "nu_binary")
+load("@rules_nu//nu:rules.bzl", "nu_binary", "nu_library")
 load("//:utils.bzl", "wrapped_binary_test")
 
 # ── TC-01: Checks a simple hello world binary ─────────────────────────────────
@@ -6,7 +6,7 @@ load("//:utils.bzl", "wrapped_binary_test")
 def test_simple_binary():
     nu_binary(
         name = "hello",
-        main = "srcs/hello.nu",
+        main = "//:srcs/hello.nu",
     )
 
     wrapped_binary_test(
@@ -21,7 +21,7 @@ def test_simple_binary():
 def test_nu_toolchain():
     nu_binary(
         name = "nu_toolchain",
-        main = "srcs/check_toolchain.nu",
+        main = "//:srcs/check_toolchain.nu",
     )
 
     wrapped_binary_test(
@@ -31,12 +31,12 @@ def test_nu_toolchain():
 
     return "nu_toolchain_test"
 
-# ── TC-03: Modules scripts can be loaded  ───────────────────────
+# ── TC-03: Modules scripts can be loaded  ─────────────────────────────────────
 
 def test_module_import():
     nu_binary(
         name = "module_import",
-        main = "srcs/modules.nu",
+        main = "//:srcs/modules.nu",
         deps = ["//:math"],
     )
 
@@ -46,3 +46,41 @@ def test_module_import():
     )
 
     return "module_import_test"
+
+# ── TC-04: Files are available through data ───────────────────────────────────
+
+def test_data():
+    nu_binary(
+        name = "data",
+        main = "//:srcs/data.nu",
+        data = ["//:data/data1.txt"],
+    )
+
+    wrapped_binary_test(
+        name = "data_test",
+        binary = ":data",
+    )
+
+    return "data_test"
+
+# ── TC-05: Files are available from transitive data ───────────────────────────────────
+
+def test_transitive_data():
+    nu_library(
+        name = "a_data",
+        srcs = ["//:srcs/a.nu"],
+        data = ["//:data/data1.txt"],
+    )
+
+    nu_binary(
+        name = "transitive_data",
+        main = "//:srcs/data.nu",
+        deps = [":a_data"],
+    )
+
+    wrapped_binary_test(
+        name = "transitive_data_test",
+        binary = ":transitive_data",
+    )
+
+    return "transitive_data_test"
