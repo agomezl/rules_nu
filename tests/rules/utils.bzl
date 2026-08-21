@@ -3,11 +3,8 @@ load("@hermetic_launcher//launcher:lib.bzl", "launcher")
 def _wrapped_binary_test_impl(ctx):
     binary = ctx.executable.binary
     test_binary = ctx.actions.declare_file(ctx.label.name)
-    embedded, transformed = launcher.args_from_entrypoint(binary)
-    launcher.compile_stub(
-        ctx = ctx,
-        embedded_args = embedded,
-        transformed_args = transformed,
+    launcher.entrypoint(binary).compile(
+        ctx,
         output_file = test_binary,
         cfg = "exec",
     )
