@@ -1,4 +1,4 @@
-load("@rules_nu//nu:rules.bzl", "nu_binary")
+load("@rules_nu//nu:rules.bzl", "nu_binary", "nu_library")
 load("//:utils.bzl", "wrapped_binary_test")
 
 # ── TC-01: Checks a simple hello world binary ─────────────────────────────────
@@ -62,3 +62,25 @@ def test_data():
     )
 
     return "data_test"
+
+# ── TC-05: Files are available from transitive data ───────────────────────────────────
+
+def test_transitive_data():
+    nu_library(
+        name = "a_data",
+        srcs = ["//:srcs/a.nu"],
+        data = ["//:data/data1.txt"],
+    )
+
+    nu_binary(
+        name = "transitive_data",
+        main = "//:srcs/data.nu",
+        deps = [":a_data"],
+    )
+
+    wrapped_binary_test(
+        name = "transitive_data_test",
+        binary = ":transitive_data",
+    )
+
+    return "transitive_data_test"
