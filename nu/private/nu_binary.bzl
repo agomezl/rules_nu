@@ -16,39 +16,14 @@ def _nu_binary_impl(ctx):
     )
     runfiles = runfiles.merge_all([dep[NuInfo].runfiles for dep in ctx.attr.deps])
 
-    embedded, transformed = launcher.args_from_entrypoint(nu)
-    embedded, transformed = launcher.append_embedded_arg(
-        arg = "--env-config",
-        embedded_args = embedded,
-        transformed_args = transformed,
-    )
-    embedded, transformed = launcher.append_runfile(
-        file = ctx.file._env_config,
-        embedded_args = embedded,
-        transformed_args = transformed,
-    )
-    embedded, transformed = launcher.append_embedded_arg(
-        arg = "--config",
-        embedded_args = embedded,
-        transformed_args = transformed,
-    )
-    embedded, transformed = launcher.append_runfile(
-        file = ctx.file._config,
-        embedded_args = embedded,
-        transformed_args = transformed,
-    )
-    embedded, transformed = launcher.append_runfile(
-        file = ctx.file.main,
-        embedded_args = embedded,
-        transformed_args = transformed,
-    )
-    launcher.compile_stub(
-        ctx = ctx,
-        embedded_args = embedded,
-        transformed_args = transformed,
-        output_file = exe,
-        cfg = "target",
-    )
+    (launcher.entrypoint(nu)
+        .embedded_args("--env-config")
+        .runfiles(ctx.file._env_config)
+        .embedded_args("--config")
+        .runfiles(ctx.file._config)
+        .embedded_args()
+        .runfiles(ctx.file.main)
+        .compile(ctx, output_file = exe, cfg = "target"))
 
     return [
         DefaultInfo(
