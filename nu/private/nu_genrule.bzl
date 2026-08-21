@@ -16,10 +16,11 @@ def _nu_genrule_impl(ctx):
     cmd = "open %s | let bazel; %s" % (variables_file.path, ctx.attr.cmd)
 
     module_inputs = [t[NuInfo].scripts for t in ctx.attr.modules]
+    module_data_inputs = [t[NuInfo].data for t in ctx.attr.modules]
     data_inputs = [dep[DefaultInfo].files for dep in ctx.attr.data]
     all_inputs = depset(
         ctx.files.inputs + [variables_file] + config_files,
-        transitive = module_inputs + data_inputs,
+        transitive = module_inputs + module_data_inputs + data_inputs,
     )
     args = ctx.actions.args()
     args.add("--env-config", ctx.file._env_config)

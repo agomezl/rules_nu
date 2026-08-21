@@ -5,11 +5,14 @@ load("//nu/toolchains:defs.bzl", "NUSHELL_TOOLCHAIN_TYPE")
 def _nu_binary_impl(ctx):
     nu = ctx.toolchains[NUSHELL_TOOLCHAIN_TYPE].nu
     exe = ctx.actions.declare_file(ctx.label.name)
-    data_inputs = depset(transitive = [dep[DefaultInfo].files for dep in ctx.attr.data])
+    data_inputs = [dep[DefaultInfo].files for dep in ctx.attr.data]
+    module_inputs = [dep[NuInfo].data for dep in ctx.attr.deps]
     inputs = [nu, ctx.file.main, ctx.file._config, ctx.file._env_config]
     runfiles = ctx.runfiles(
         files = inputs,
-        transitive_files = data_inputs,
+        transitive_files = depset(
+            transitive = data_inputs + module_inputs,
+        ),
     )
     runfiles = runfiles.merge_all([dep[NuInfo].runfiles for dep in ctx.attr.deps])
 
