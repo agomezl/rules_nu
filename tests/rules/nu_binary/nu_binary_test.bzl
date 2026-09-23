@@ -100,3 +100,19 @@ def test_runfiles_data():
     )
 
     return "runfiles_data_test"
+
+# ── TC-07: Compare runfiles resolution against hermetic-launcher ─────────────
+
+def test_runfiles_comparison():
+    nu_binary(
+        name = "runfiles_comparison",
+        main = "//:srcs/runfiles_comparison.nu",
+    )
+
+    wrapped_binary_test(
+        name = "runfiles_comparison_test",
+        binary = ":runfiles_comparison",
+        input = "//:data/data1.txt",
+    )
+
+    return "runfiles_comparison_test"
