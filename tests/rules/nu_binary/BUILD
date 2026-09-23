@@ -3,6 +3,7 @@ load(
     "test_data",
     "test_module_import",
     "test_nu_toolchain",
+    "test_runfiles_data",
     "test_simple_binary",
     "test_transitive_data",
 )
@@ -15,6 +16,7 @@ test_suite(
         test_module_import(),
         test_data(),
         test_transitive_data(),
+        test_runfiles_data(),
     ],
     visibility = ["//visibility:public"],
 )

@@ -84,3 +84,19 @@ def test_transitive_data():
     )
 
     return "transitive_data_test"
+
+# ── TC-06: Files are available through data via runfiles ─────────────────────
+
+def test_runfiles_data():
+    nu_binary(
+        name = "runfiles_data",
+        main = "//:srcs/runfiles.nu",
+        data = ["//:data/data1.txt"],
+    )
+
+    wrapped_binary_test(
+        name = "runfiles_data_test",
+        binary = ":runfiles_data",
+    )
+
+    return "runfiles_data_test"
