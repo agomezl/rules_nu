@@ -66,6 +66,10 @@ def _nu_genrule_impl(name, visibility, cmd, outputs, inputs, deps, data, **kwarg
         content = _nu_genrule_script(cmd),
     )
 
+    # We require this intermediate `nu_library` to allow `data` and `deps` to be
+    # configurable. The trivial solution is to use `data = inputs + data` in
+    # `nu_binary`, but this analysis-time evaluation is not allowed on
+    # configurable attributes.
     nu_library(
         name = data_deps_library,
         data = data,
@@ -95,12 +99,7 @@ nu_genrule = macro(
     inherit_attrs = "common",
     attrs = {
         "cmd": attr.string(
-            doc = """
-            The nushell command to run. May refer to `$bazel.inputs` (an
-            ordered list of resolved paths, one per `inputs` label) and
-            `$bazel.outputs` (an ordered list of paths, one per `outputs`
-            label).
-            """,
+            doc = "The nushell command to run.",
             mandatory = True,
             configurable = False,
         ),
@@ -110,12 +109,10 @@ nu_genrule = macro(
             allow_empty = False,
         ),
         "inputs": attr.label_list(
-            doc = """
-            input files accessible to `cmd` via `$bazel.inputs` (and runfiles)
-            """,
+            doc = "Input files accessible via `$bazel.inputs` (and runfiles).",
         ),
         "deps": attr.label_list(
-            doc = "Nushell module (`nu_library`) dependencies made available to `cmd` via `use`.",
+            doc = "Nushell modules dependencies available to `cmd` via `use`.",
         ),
         "data": attr.label_list(
             doc = "Additional files available to `cmd` via `runfiles`.",

@@ -61,16 +61,7 @@ nu_binary = rule(
             default = "//nu/private:config.nu",
         ),
         "cfg": attr.string(
-            doc = """
-            Which hermetic_launcher template flavor to compile the launcher
-            stub with: "target" (default) embeds a template native to this
-            target's own configuration, appropriate for artifacts meant to
-            be run/deployed on the target platform (e.g. via `bazel run`).
-            "exec" embeds a template native to the execution platform,
-            appropriate for binaries meant to be invoked as build tools
-            (e.g. from another rule's actions), regardless of the target
-            platform currently being built for.
-            """,
+            doc = "Build configuration to use (target or exec)",
             default = "target",
             values = ["target", "exec"],
         ),
