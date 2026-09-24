@@ -79,7 +79,7 @@ nu_binary = rule(
     toolchains = [
         NUSHELL_TOOLCHAIN_TYPE,
         launcher.finalizer_toolchain_type,
-        config_common.toolchain_type(launcher.template_toolchain_type, mandatory = False),
-        config_common.toolchain_type(launcher.template_exec_toolchain_type, mandatory = False),
+        launcher.template_toolchain_type,
+        launcher.template_exec_toolchain_type,
     ],
 )

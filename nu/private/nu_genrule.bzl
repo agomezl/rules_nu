@@ -28,6 +28,7 @@ def _nu_genrule_run_impl(ctx):
     args = ctx.actions.args()
     args.add_all(ctx.outputs.outputs)
     args.add_all([launcher.to_rlocation_path(f) for f in ctx.files.inputs])
+    args.use_param_file("%s", use_always = True)
 
     ctx.actions.run(
         executable = binary,
@@ -76,7 +77,8 @@ def _nu_genrule_script(cmd, num_outputs):
     `$bazel.inputs` are reconstructed from those at run time, preserving the
     contract asserted by tests/rules/nu_genrule/nu_genrule_test.bzl.
     """
-    return """def main [...args: string] {{
+    return """def main [args_file: string] {{
+    let args = (open $args_file | lines)
     let outputs = ($args | take {num_outputs})
     let input_keys = ($args | skip {num_outputs})
     let rf = (runfiles create)
@@ -113,16 +115,9 @@ def nu_genrule(name, cmd, outputs, inputs = [], deps = [], data = [], modules = 
             `nu_binary`'s `data` attribute (resolvable at runtime via
             `runfiles create`/`runfiles rlocation`), but not listed in
             `$bazel.inputs`.
-        modules: Deprecated alias for `deps`, kept for backwards
-            compatibility. Do not use `deps` and `modules` together.
         **kwargs: Additional arguments (e.g. `visibility`, `tags`,
             `testonly`) forwarded to the target that owns `outputs`.
     """
-    if modules != None:
-        if deps:
-            fail("nu_genrule(%r): specify only one of `deps` or `modules`" % name)
-        deps = modules
-
     testonly = kwargs.get("testonly", False)
 
     script_name = "%s_main" % name
