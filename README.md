@@ -56,9 +56,3 @@ nu_genrule(
     outputs = ["greeting.txt"],
 )
 ```
-
-`nu_genrule` is a macro built on top of `nu_binary`: `cmd` is written to a
-generated `.nu` script and compiled/run the same way a `nu_binary` would be,
-so it also declares two auxiliary targets, `<name>_main` (the generated
-script) and `<name>_bin` (the compiled `nu_binary`), alongside `<name>`
-itself.
