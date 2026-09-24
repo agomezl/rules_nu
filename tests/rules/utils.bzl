@@ -1,12 +1,5 @@
 load("@hermetic_launcher//launcher:lib.bzl", "launcher")
 
-# Stolen from:
-# https://github.com/hermeticbuild/hermetic-launcher/blob/main/launcher/private/rules/lib.bzl#L21C1-L24C35
-def _to_rlocation_path(f):
-    if f.short_path.startswith("../"):
-        return f.short_path[3:]
-    return "_main/" + f.short_path
-
 def _wrapped_binary_test_impl(ctx):
     binary = ctx.executable.binary
     test_binary = ctx.actions.declare_file(ctx.label.name)
@@ -16,7 +9,7 @@ def _wrapped_binary_test_impl(ctx):
         entrypoint = (
             entrypoint
                 .runfiles(ctx.file.input)
-                .embedded_args(_to_rlocation_path(ctx.file.input))
+                .embedded_args(launcher.to_rlocation_path(ctx.file.input))
         )
         inputs.append(ctx.file.input)
 
