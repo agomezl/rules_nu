@@ -128,7 +128,7 @@ def test_nu_exe():
         name = "nu_exe",
         cmd = r"""
             let nu_exe: string = ($nu.current-exe | str trim)
-            let heuristic_paths: list<string> = ["/_main/", "/external/", '/\+nu\+']
+            let heuristic_paths: list<string> = ["/_main/", "/external/", '/\+nu\+', '/bazel-out/']
             if not ($heuristic_paths | any {|path| $nu_exe =~ $path}) {
                 error make {msg: $'nu binary is not from a toolchain: ($nu_exe)'}
             }
