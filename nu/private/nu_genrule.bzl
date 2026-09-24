@@ -1,45 +1,58 @@
-load("//nu/private:providers.bzl", "NuInfo")
-load("//nu/toolchains:defs.bzl", "NUSHELL_TOOLCHAIN_TYPE")
+load("@hermetic_launcher//launcher:lib.bzl", "launcher")
+load("//nu/private:nu_binary.bzl", "nu_binary")
 
-def _nu_genrule_impl(ctx):
-    nu = ctx.toolchains[NUSHELL_TOOLCHAIN_TYPE].nu
-    variables = {
-        "inputs": [f.path for f in ctx.files.inputs],
-        "outputs": [f.path for f in ctx.outputs.outputs],
-    }
-    config_files = [ctx.file._env_config, ctx.file._config]
-    variables_file = ctx.actions.declare_file("%s_env.json" % ctx.label.name)
-    ctx.actions.write(
-        output = variables_file,
-        content = json.encode(variables),
-    )
-    cmd = "open %s | let bazel; %s" % (variables_file.path, ctx.attr.cmd)
+def _write_nu_script_impl(ctx):
+    ctx.actions.write(output = ctx.outputs.out, content = ctx.attr.content)
 
-    module_inputs = [t[NuInfo].scripts for t in ctx.attr.modules]
-    module_data_inputs = [t[NuInfo].data for t in ctx.attr.modules]
-    data_inputs = [dep[DefaultInfo].files for dep in ctx.attr.data]
-    all_inputs = depset(
-        ctx.files.inputs + [variables_file] + config_files,
-        transitive = module_inputs + module_data_inputs + data_inputs,
-    )
+# A minimal stand-in for `@bazel_skylib//rules:write_file.bzl`'s `write_file`,
+# kept private and in-tree so `nu_genrule` doesn't need to add bazel_skylib
+# as a real (non-dev) dependency of rules_nu just to generate one string into
+# a file.
+_write_nu_script = rule(
+    implementation = _write_nu_script_impl,
+    attrs = {
+        "content": attr.string(
+            doc = "The literal contents to write to `out`",
+            mandatory = True,
+        ),
+        "out": attr.output(
+            doc = "The generated .nu file",
+            mandatory = True,
+        ),
+    },
+)
+
+def _nu_genrule_run_impl(ctx):
+    binary = ctx.attr.binary[DefaultInfo].files_to_run
+
     args = ctx.actions.args()
-    args.add("--env-config", ctx.file._env_config)
-    args.add("--config", ctx.file._config)
-    args.add("-c", cmd)
+    args.add_all(ctx.outputs.outputs)
+    args.add_all([launcher.to_rlocation_path(f) for f in ctx.files.inputs])
 
     ctx.actions.run(
-        executable = nu,
-        inputs = all_inputs,
-        outputs = ctx.outputs.outputs,
+        executable = binary,
         arguments = [args],
+        inputs = depset(ctx.files.inputs),
+        outputs = ctx.outputs.outputs,
+        tools = [binary],
+        mnemonic = "NuGenrule",
+        progress_message = "Running nu_genrule %{label}",
     )
 
-nu_genrule = rule(
-    implementation = _nu_genrule_impl,
+# The only genuinely new rule: it runs the pre-compiled nu_binary-style
+# executable (built by the `nu_genrule` macro below) as its action, passing
+# the resolved output paths and the runfiles-relative keys for each declared
+# input as trailing argv. All toolchain/config/module/data resolution is
+# inherited from `nu_binary` -- this rule does not talk to the nushell
+# toolchain directly at all.
+_nu_genrule_run = rule(
+    implementation = _nu_genrule_run_impl,
     attrs = {
-        "cmd": attr.string(
+        "binary": attr.label(
+            doc = "The compiled nu_binary-style executable to run",
+            executable = True,
+            cfg = "exec",
             mandatory = True,
-            doc = "The nu shell command to run",
         ),
         "inputs": attr.label_list(
             doc = "The input files accessible to the nu shell command",
@@ -50,27 +63,91 @@ nu_genrule = rule(
             mandatory = True,
             allow_empty = False,
         ),
-        "modules": attr.label_list(
-            doc = "Nushell modules to use in this script",
-            allow_empty = True,
-            providers = [NuInfo],
-        ),
-        "data": attr.label_list(
-            doc = "Additional files which are available to the nu shell command",
-            allow_files = True,
-        ),
-        "_env_config": attr.label(
-            doc = "Nushell env.nu file",
-            allow_single_file = [".nu"],
-            mandatory = False,
-            default = "//nu/private:env.nu",
-        ),
-        "_config": attr.label(
-            doc = "Nushell config.nu file",
-            allow_single_file = [".nu"],
-            mandatory = False,
-            default = "//nu/private:config.nu",
-        ),
     },
-    toolchains = [NUSHELL_TOOLCHAIN_TYPE],
 )
+
+def _nu_genrule_script(cmd, num_outputs):
+    """Builds the generated main.nu script's source text.
+
+    The script's `main` entry point receives, as trailing CLI args (per
+    hermetic_launcher's argv-forwarding, see `_nu_genrule_run_impl` above):
+    the `num_outputs` resolved output paths, followed by the
+    runfiles-relative key for each declared input. `$bazel.outputs` and
+    `$bazel.inputs` are reconstructed from those at run time, preserving the
+    contract asserted by tests/rules/nu_genrule/nu_genrule_test.bzl.
+    """
+    return """def main [...args: string] {{
+    let outputs = ($args | take {num_outputs})
+    let input_keys = ($args | skip {num_outputs})
+    let rf = (runfiles create)
+    let bazel = {{
+        outputs: $outputs
+        inputs: ($input_keys | each {{|key| runfiles rlocation $rf $key }})
+    }}
+{cmd}
+}}
+""".format(num_outputs = num_outputs, cmd = cmd)
+
+def nu_genrule(name, cmd, outputs, inputs = [], deps = [], data = [], modules = None, **kwargs):
+    """Generates `outputs` by running a nushell command.
+
+    Under the hood, `cmd` (plus a small amount of `$bazel.inputs`/
+    `$bazel.outputs` setup logic) is written to an intermediate `.nu` script,
+    which is compiled into a `nu_binary`-style executable exactly like a
+    user-authored `nu_binary` would be; that executable is then run as this
+    macro's build action, with `outputs`' resolved paths and `inputs`'
+    runfiles-relative keys passed as trailing arguments.
+
+    Args:
+        name: The name of the target producing `outputs`.
+        cmd: The nushell command to run. May refer to `$bazel.inputs` (an
+            ordered list of resolved paths, one per `inputs` label) and
+            `$bazel.outputs` (an ordered list of paths, one per `outputs`
+            label).
+        outputs: The output files generated by `cmd`. Mandatory, non-empty.
+        inputs: The input files accessible to `cmd` via `$bazel.inputs`, and
+            (like `data`) available in the underlying nu_binary's runfiles.
+        deps: Nushell module (`nu_library`) dependencies made available to
+            `cmd` via `use`.
+        data: Additional files made available to `cmd` in the same way as
+            `nu_binary`'s `data` attribute (resolvable at runtime via
+            `runfiles create`/`runfiles rlocation`), but not listed in
+            `$bazel.inputs`.
+        modules: Deprecated alias for `deps`, kept for backwards
+            compatibility. Do not use `deps` and `modules` together.
+        **kwargs: Additional arguments (e.g. `visibility`, `tags`,
+            `testonly`) forwarded to the target that owns `outputs`.
+    """
+    if modules != None:
+        if deps:
+            fail("nu_genrule(%r): specify only one of `deps` or `modules`" % name)
+        deps = modules
+
+    testonly = kwargs.get("testonly", False)
+
+    script_name = "%s_main" % name
+    binary_name = "%s_bin" % name
+
+    _write_nu_script(
+        name = script_name,
+        out = script_name + ".nu",
+        content = _nu_genrule_script(cmd, len(outputs)),
+        testonly = testonly,
+    )
+
+    nu_binary(
+        name = binary_name,
+        main = ":" + script_name,
+        deps = deps,
+        data = data + inputs,
+        cfg = "exec",
+        testonly = testonly,
+    )
+
+    _nu_genrule_run(
+        name = name,
+        binary = ":" + binary_name,
+        inputs = inputs,
+        outputs = outputs,
+        **kwargs
+    )

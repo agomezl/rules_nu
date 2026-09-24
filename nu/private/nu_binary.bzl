@@ -23,7 +23,7 @@ def _nu_binary_impl(ctx):
         .runfiles(ctx.file._config)
         .embedded_args()
         .runfiles(ctx.file.main)
-        .compile(ctx, output_file = exe, cfg = "target"))
+        .compile(ctx, output_file = exe, cfg = ctx.attr.cfg))
 
     return [
         DefaultInfo(
@@ -60,11 +60,26 @@ nu_binary = rule(
             mandatory = False,
             default = "//nu/private:config.nu",
         ),
+        "cfg": attr.string(
+            doc = """
+            Which hermetic_launcher template flavor to compile the launcher
+            stub with: "target" (default) embeds a template native to this
+            target's own configuration, appropriate for artifacts meant to
+            be run/deployed on the target platform (e.g. via `bazel run`).
+            "exec" embeds a template native to the execution platform,
+            appropriate for binaries meant to be invoked as build tools
+            (e.g. from another rule's actions), regardless of the target
+            platform currently being built for.
+            """,
+            default = "target",
+            values = ["target", "exec"],
+        ),
     },
     executable = True,
     toolchains = [
         NUSHELL_TOOLCHAIN_TYPE,
         launcher.finalizer_toolchain_type,
-        launcher.template_toolchain_type,
+        config_common.toolchain_type(launcher.template_toolchain_type, mandatory = False),
+        config_common.toolchain_type(launcher.template_exec_toolchain_type, mandatory = False),
     ],
 )
