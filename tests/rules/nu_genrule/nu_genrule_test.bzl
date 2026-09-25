@@ -111,7 +111,7 @@ def test_modules_available():
             }
             "ok" | save $bazel.outputs.0
         """,
-        modules = ["//:math"],
+        deps = ["//:math"],
         outputs = [":modules_available.out"],
     )
 
@@ -128,7 +128,7 @@ def test_nu_exe():
         name = "nu_exe",
         cmd = r"""
             let nu_exe: string = ($nu.current-exe | str trim)
-            let heuristic_paths: list<string> = ["/_main/", "/external/", '/\+nu\+']
+            let heuristic_paths: list<string> = ["/_main/", "/external/", '/\+nu\+', '/bazel-out/']
             if not ($heuristic_paths | any {|path| $nu_exe =~ $path}) {
                 error make {msg: $'nu binary is not from a toolchain: ($nu_exe)'}
             }
@@ -148,7 +148,8 @@ def test_data():
     nu_genrule(
         name = "data",
         cmd = r"""
-        let data = open "data/data1.txt"
+        let rf = (runfiles create)
+        let data = open (runfiles rlocation $rf "_main/data/data1.txt")
 
         if $data == "Some Data!\n" {
             echo "Ok" | save $bazel.outputs.0
@@ -178,7 +179,8 @@ def test_transitive_data():
     nu_genrule(
         name = "transitive_data",
         cmd = r"""
-        let data = open "data/data1.txt"
+        let rf = (runfiles create)
+        let data = open (runfiles rlocation $rf "_main/data/data1.txt")
 
         if $data == "Some Data!\n" {
             echo "Ok" | save $bazel.outputs.0
@@ -188,7 +190,7 @@ def test_transitive_data():
         }
         """,
         outputs = [":transitive_data.out"],
-        modules = [":data1"],
+        deps = [":data1"],
     )
 
     build_test(

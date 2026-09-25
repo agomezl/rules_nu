@@ -23,7 +23,7 @@ def _nu_binary_impl(ctx):
         .runfiles(ctx.file._config)
         .embedded_args()
         .runfiles(ctx.file.main)
-        .compile(ctx, output_file = exe, cfg = "target"))
+        .compile(ctx, output_file = exe, cfg = ctx.attr.cfg))
 
     return [
         DefaultInfo(
@@ -60,11 +60,17 @@ nu_binary = rule(
             mandatory = False,
             default = "//nu/private:config.nu",
         ),
+        "cfg": attr.string(
+            doc = "Build configuration to use (target or exec)",
+            default = "target",
+            values = ["target", "exec"],
+        ),
     },
     executable = True,
     toolchains = [
         NUSHELL_TOOLCHAIN_TYPE,
         launcher.finalizer_toolchain_type,
         launcher.template_toolchain_type,
+        launcher.template_exec_toolchain_type,
     ],
 )
