@@ -1,5 +1,3 @@
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-
 # Load the nushell_toolchain rule
 load(":defs.bzl", "nushell_toolchain")
 
@@ -9,8 +7,9 @@ toolchain_type(
     visibility = ["//visibility:public"],
 )
 
-bzl_library(
-    name = "defs",
-    srcs = ["defs.bzl"],
-    visibility = ["//nu:__subpackages__"],
+# Only used to generate the docs in //docs.
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob(["*.bzl"]),
+    visibility = ["//docs:__pkg__"],
 )

@@ -1,5 +1,16 @@
 load("@bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@stardoc//stardoc:stardoc.bzl", "stardoc")
+
+bzl_library(
+    name = "rules_nu",
+    srcs = [
+        "//nu:bzl_srcs",
+        "//nu/private:bzl_srcs",
+        "//nu/toolchains:bzl_srcs",
+    ],
+    deps = ["@hermetic_launcher//launcher:lib_bzl"],
+)
 
 _RULES = [
     "nu_binary",
@@ -13,7 +24,7 @@ _RULES = [
         out = rule + ".generated.md",
         input = "//nu:rules.bzl",
         symbol_names = [rule],
-        deps = ["//nu:rules"],
+        deps = [":rules_nu"],
     )
     for rule in _RULES
 ]

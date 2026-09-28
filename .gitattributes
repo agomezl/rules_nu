@@ -16,3 +16,5 @@ tools export-ignore
 tools/ export-ignore
 tests export-ignore
 tests/** export-ignore
+docs export-ignore
+docs/** export-ignore

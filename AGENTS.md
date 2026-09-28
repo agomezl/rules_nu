@@ -20,6 +20,11 @@ details.
   on the host. Keep changes consistent with this — avoid introducing
   non-hermetic dependencies (network access at build time, host tool
   assumptions, etc.).
+- **Minimal dependencies.** Keep non-dev `bazel_dep`s in `MODULE.bazel` to a
+  minimum, since every one is forced on users of `rules_nu`. Tooling needed
+  only for development (docs, tests, CI) should be a `dev_dependency = True`
+  and loaded only from packages users never load (e.g. `//docs`, `//tools`),
+  not from `nu/`.
 
 ## Repo layout
 

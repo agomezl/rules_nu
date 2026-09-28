@@ -2,7 +2,6 @@ module(
     name = "rules_nu",
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.9.2")
 bazel_dep(name = "hermetic_launcher", version = "0.0.15")
 bazel_dep(name = "platforms", version = "1.1.0")
 
@@ -14,6 +13,7 @@ register_toolchains("@nu_toolchains//:all")
 
 # Dependencies for development/testing only
 bazel_dep(name = "bazel_lib", version = "3.7.2", dev_dependency = True)
+bazel_dep(name = "bazel_skylib", version = "1.9.2", dev_dependency = True)
 bazel_dep(name = "bazelrc-preset.bzl", version = "1.9.2", dev_dependency = True)
 bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True)
 bazel_dep(name = "toolchains_buildbuddy", version = "0.0.4", dev_dependency = True)
