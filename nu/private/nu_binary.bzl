@@ -7,14 +7,18 @@ def _nu_binary_impl(ctx):
     exe = ctx.actions.declare_file(ctx.label.name)
     data_inputs = [dep[DefaultInfo].files for dep in ctx.attr.data]
     module_inputs = [dep[NuInfo].data for dep in ctx.attr.deps]
+    tool_files = [tool[DefaultInfo].files_to_run.executable for tool in ctx.attr.tools]
     inputs = [nu, ctx.file.main, ctx.file._config, ctx.file._env_config]
     runfiles = ctx.runfiles(
-        files = inputs,
+        files = inputs + tool_files,
         transitive_files = depset(
             transitive = data_inputs + module_inputs,
         ),
     )
-    runfiles = runfiles.merge_all([dep[NuInfo].runfiles for dep in ctx.attr.deps])
+    runfiles = runfiles.merge_all(
+        [dep[NuInfo].runfiles for dep in ctx.attr.deps] +
+        [tool[DefaultInfo].default_runfiles for tool in ctx.attr.tools],
+    )
 
     (launcher.entrypoint(nu)
         .embedded_args("--env-config")
@@ -47,6 +51,12 @@ nu_binary = rule(
         "data": attr.label_list(
             doc = "Additional data files to include in the runfiles",
             allow_files = True,
+        ),
+        "tools": attr.label_list(
+            doc = """Executable targets, built for the exec platform, that the script can
+            call. Their runfiles are merged into this binary's runfiles, so
+            they can be located with `runfiles rlocation`.""",
+            cfg = "exec",
         ),
         "_env_config": attr.label(
             doc = "Nushell env.nu file",

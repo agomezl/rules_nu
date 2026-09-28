@@ -5,6 +5,7 @@ load(
     "test_inputs_single",
     "test_modules_available",
     "test_nu_exe",
+    "test_tools",
     "test_outputs_multiple",
     "test_outputs_single",
     "test_transitive_data",
@@ -21,6 +22,7 @@ test_suite(
         test_nu_exe(),
         test_data(),
         test_transitive_data(),
+        test_tools(),
     ],
     visibility = ["//visibility:public"],
 )

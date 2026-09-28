@@ -116,3 +116,25 @@ def test_runfiles_comparison():
     )
 
     return "runfiles_comparison_test"
+
+# ── TC-08: Tools are available through runfiles ───────────────────────────────
+
+def test_tools():
+    nu_binary(
+        name = "tool",
+        main = "//:srcs/tool_data.nu",
+        data = ["//:data/data1.txt"],
+    )
+    nu_binary(
+        name = "tools",
+        main = "//:srcs/call_tool.nu",
+        tools = [":tool"],
+    )
+
+    wrapped_binary_test(
+        name = "tools_test",
+        binary = ":tools",
+        input = ":tool",
+    )
+
+    return "tools_test"

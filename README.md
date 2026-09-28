@@ -56,3 +56,24 @@ nu_genrule(
     outputs = ["greeting.txt"],
 )
 ```
+
+### Calling other executables with `tools`
+
+`nu_binary` and `nu_genrule` accept a `tools` attribute: executable targets,
+built for the exec platform, that the script can call. Their runfiles are
+merged into the script's runfiles, so a tool keeps access to its own data.
+
+In `nu_genrule`, the resolved tool paths are available in order as
+`$bazel.tools`:
+
+```python
+nu_genrule(
+    name = "generated",
+    cmd = """^($bazel.tools | get 0) --flag | save ($bazel.outputs | get 0)""",
+    tools = [":generator"],
+    outputs = ["generated.txt"],
+)
+```
+
+In `nu_binary`, tools are only added to the runfiles; locate them with
+`runfiles rlocation` (e.g. `_main/pkg/generator`).
