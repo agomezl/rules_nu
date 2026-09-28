@@ -33,10 +33,11 @@ details.
 
 ## Testing
 
-Rule changes are tested in the `tests/rules` workspace, not the root
+Rule changes are tested in the `tests/rules` workspace and the root
 workspace:
 
 ```sh
+bazel test //...
 cd tests/rules
 bazel test //...
 ```
