@@ -12,29 +12,37 @@ bzl_library(
     deps = ["@hermetic_launcher//launcher:lib_bzl"],
 )
 
-_RULES = [
-    "nu_binary",
-    "nu_genrule",
-    "nu_library",
-]
+stardoc(
+    name = "nu_binary_docs",
+    out = "nu_binary.generated.md",
+    input = "//nu:rules.bzl",
+    symbol_names = ["nu_binary"],
+    deps = [":rules_nu"],
+)
 
-[
-    stardoc(
-        name = rule + "_docs",
-        out = rule + ".generated.md",
-        input = "//nu:rules.bzl",
-        symbol_names = [rule],
-        deps = [":rules_nu"],
-    )
-    for rule in _RULES
-]
+stardoc(
+    name = "nu_genrule_docs",
+    out = "nu_genrule.generated.md",
+    input = "//nu:rules.bzl",
+    symbol_names = ["nu_genrule"],
+    deps = [":rules_nu"],
+)
+
+stardoc(
+    name = "nu_library_docs",
+    out = "nu_library.generated.md",
+    input = "//nu:rules.bzl",
+    symbol_names = ["nu_library"],
+    deps = [":rules_nu"],
+)
 
 # `bazel test //docs/...` diffs the checked-in docs against the generated
 # ones; `bazel run //docs:update` refreshes them.
 write_source_files(
     name = "update",
     files = {
-        rule + ".md": ":" + rule + "_docs"
-        for rule in _RULES
+        "nu_binary.md": ":nu_binary_docs",
+        "nu_genrule.md": ":nu_genrule_docs",
+        "nu_library.md": ":nu_library_docs",
     },
 )
