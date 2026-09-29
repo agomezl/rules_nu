@@ -7,10 +7,9 @@ def _nu_binary_impl(ctx):
     exe = ctx.actions.declare_file(ctx.label.name)
     data_inputs = [dep[DefaultInfo].files for dep in ctx.attr.data]
     module_inputs = [dep[NuInfo].data for dep in ctx.attr.deps]
-    tool_files = [tool[DefaultInfo].files_to_run.executable for tool in ctx.attr.tools]
     inputs = [nu, ctx.file.main, ctx.file._config, ctx.file._env_config]
     runfiles = ctx.runfiles(
-        files = inputs + tool_files,
+        files = inputs,
         transitive_files = depset(
             transitive = data_inputs + module_inputs,
         ),
