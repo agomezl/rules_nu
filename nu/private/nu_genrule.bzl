@@ -125,7 +125,10 @@ nu_genrule = macro(
             doc = "Input files accessible via `$bazel.inputs` (and runfiles).",
         ),
         "tools": attr.label_list(
-            doc = "Executable targets (built for the exec platform) that `cmd` can call; their resolved paths are in `$bazel.tools`, in order.",
+            doc = """
+            Executable targets that `cmd` can call;
+            their resolved paths are in `$bazel.tools`, in order.
+            """,
         ),
         "deps": attr.label_list(
             doc = "Nushell modules dependencies available to `cmd` via `use`.",
