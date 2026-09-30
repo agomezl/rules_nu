@@ -2,7 +2,7 @@
 """
 
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_nu//nu:rules.bzl", "nu_genrule", "nu_library")
+load("@rules_nu//nu:rules.bzl", "nu_binary", "nu_genrule", "nu_library")
 
 # ── TC-01: Single input appears in $bazel.inputs ──────────────────────────────
 
@@ -198,3 +198,33 @@ def test_transitive_data():
         targets = [":transitive_data"],
     )
     return "transitive_data_test"
+
+# ── TC-09: Tools are callable and keep their own runfiles ─────────────────────
+
+def test_tools():
+    nu_binary(
+        name = "tool",
+        main = "//:srcs/tool_data.nu",
+        data = ["//:data/data1.txt"],
+    )
+    nu_genrule(
+        name = "tools",
+        cmd = r"""
+        if ($bazel.tools | length) != 1 {
+            error make {msg: $'Expected 1 tool, got ($bazel.tools | length)'}
+        }
+        let out = ^$bazel.tools.0 | complete
+        if $out.exit_code != 0 or $out.stdout != "Some Data!\n" {
+            error make {msg: $'unexpected tool result: ($out)'}
+        }
+        "ok" | save $bazel.outputs.0
+        """,
+        tools = [":tool"],
+        outputs = [":tools.out"],
+    )
+
+    build_test(
+        name = "tools_test",
+        targets = [":tools"],
+    )
+    return "tools_test"

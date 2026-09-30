@@ -6,6 +6,7 @@ load(
     "test_runfiles_comparison",
     "test_runfiles_data",
     "test_simple_binary",
+    "test_tools",
     "test_transitive_data",
 )
 
@@ -19,6 +20,7 @@ test_suite(
         test_transitive_data(),
         test_runfiles_data(),
         test_runfiles_comparison(),
+        test_tools(),
     ],
     visibility = ["//visibility:public"],
 )

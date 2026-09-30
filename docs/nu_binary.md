@@ -9,7 +9,7 @@
 <pre>
 load("@rules_nu//nu:rules.bzl", "nu_binary")
 
-nu_binary(<a href="#nu_binary-name">name</a>, <a href="#nu_binary-deps">deps</a>, <a href="#nu_binary-data">data</a>, <a href="#nu_binary-cfg">cfg</a>, <a href="#nu_binary-main">main</a>)
+nu_binary(<a href="#nu_binary-name">name</a>, <a href="#nu_binary-deps">deps</a>, <a href="#nu_binary-data">data</a>, <a href="#nu_binary-cfg">cfg</a>, <a href="#nu_binary-main">main</a>, <a href="#nu_binary-tools">tools</a>)
 </pre>
 
 
@@ -24,5 +24,6 @@ nu_binary(<a href="#nu_binary-name">name</a>, <a href="#nu_binary-deps">deps</a>
 | <a id="nu_binary-data"></a>data |  Additional data files to include in the runfiles   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="nu_binary-cfg"></a>cfg |  Build configuration to use (target or exec)   | String | optional |  `"target"`  |
 | <a id="nu_binary-main"></a>main |  The main nushell script to execute   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+| <a id="nu_binary-tools"></a>tools |  Executable targets that the script can call.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 
 

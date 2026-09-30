@@ -23,10 +23,18 @@ def _nu_genrule_run_impl(ctx):
     output_args.add_all(ctx.outputs.outputs)
     output_args.use_param_file("%s", use_always = True)
 
+    tool_args = ctx.actions.args()
+    tool_args.add_all([
+        launcher.to_rlocation_path(tool[DefaultInfo].files_to_run.executable)
+        for tool in ctx.attr.tools
+    ])
+    tool_args.use_param_file("%s", use_always = True)
+
     ctx.actions.run(
         executable = ctx.executable.binary,
-        arguments = [input_args, output_args],
+        arguments = [input_args, output_args, tool_args],
         inputs = depset(ctx.files.inputs),
+        tools = [tool[DefaultInfo].files_to_run for tool in ctx.attr.tools],
         outputs = ctx.outputs.outputs,
         mnemonic = "NuGenrule",
         progress_message = "Running nu_genrule %{label}",
@@ -38,24 +46,27 @@ _nu_genrule_run = rule(
     attrs = {
         "binary": attr.label(executable = True, cfg = "exec", mandatory = True),
         "inputs": attr.label_list(allow_files = True),
+        "tools": attr.label_list(cfg = "exec"),
         "outputs": attr.output_list(mandatory = True, allow_empty = False),
     },
 )
 
 def _nu_genrule_script(cmd):
-    return """def main [inputs_file: string, outputs_file: string] {{
+    return """def main [inputs_file: string, outputs_file: string, tools_file: string] {{
     let outputs = (open $outputs_file | lines)
     let input_keys = (open $inputs_file | lines)
+    let tool_keys = (open $tools_file | lines)
     let rf = (runfiles create)
     let bazel = {{
         outputs: $outputs
         inputs: ($input_keys | each {{|key| runfiles rlocation $rf $key }})
+        tools: ($tool_keys | each {{|key| runfiles rlocation $rf $key }})
     }}
 {cmd}
 }}
 """.format(cmd = cmd)
 
-def _nu_genrule_impl(name, visibility, cmd, outputs, inputs, deps, data, **kwargs):
+def _nu_genrule_impl(name, visibility, cmd, outputs, inputs, tools, deps, data, **kwargs):
     script_name = "{}_main".format(name)
     binary_name = "{}_bin".format(name)
     data_deps_library = "{}_data_deps".format(name)
@@ -81,6 +92,7 @@ def _nu_genrule_impl(name, visibility, cmd, outputs, inputs, deps, data, **kwarg
         main = script_name,
         deps = [data_deps_library],
         data = inputs,
+        tools = tools,
         cfg = "exec",
     )
 
@@ -89,6 +101,7 @@ def _nu_genrule_impl(name, visibility, cmd, outputs, inputs, deps, data, **kwarg
         visibility = visibility,
         binary = binary_name,
         inputs = inputs,
+        tools = tools,
         outputs = outputs,
         **kwargs
     )
@@ -110,6 +123,12 @@ nu_genrule = macro(
         ),
         "inputs": attr.label_list(
             doc = "Input files accessible via `$bazel.inputs` (and runfiles).",
+        ),
+        "tools": attr.label_list(
+            doc = """
+            Executable targets that `cmd` can call;
+            their resolved paths are in `$bazel.tools`, in order.
+            """,
         ),
         "deps": attr.label_list(
             doc = "Nushell modules dependencies available to `cmd` via `use`.",

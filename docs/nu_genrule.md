@@ -12,7 +12,7 @@ load("@rules_nu//nu:rules.bzl", "nu_genrule")
 nu_genrule(*, <a href="#nu_genrule-name">name</a>, <a href="#nu_genrule-deps">deps</a>, <a href="#nu_genrule-data">data</a>, <a href="#nu_genrule-aspect_hints">aspect_hints</a>, <a href="#nu_genrule-cmd">cmd</a>, <a href="#nu_genrule-compatible_with">compatible_with</a>, <a href="#nu_genrule-deprecation">deprecation</a>,
            <a href="#nu_genrule-exec_compatible_with">exec_compatible_with</a>, <a href="#nu_genrule-exec_group_compatible_with">exec_group_compatible_with</a>, <a href="#nu_genrule-exec_properties">exec_properties</a>, <a href="#nu_genrule-features">features</a>, <a href="#nu_genrule-inputs">inputs</a>,
            <a href="#nu_genrule-outputs">outputs</a>, <a href="#nu_genrule-package_metadata">package_metadata</a>, <a href="#nu_genrule-restricted_to">restricted_to</a>, <a href="#nu_genrule-tags">tags</a>, <a href="#nu_genrule-target_compatible_with">target_compatible_with</a>, <a href="#nu_genrule-testonly">testonly</a>,
-           <a href="#nu_genrule-toolchains">toolchains</a>, <a href="#nu_genrule-visibility">visibility</a>)
+           <a href="#nu_genrule-toolchains">toolchains</a>, <a href="#nu_genrule-tools">tools</a>, <a href="#nu_genrule-visibility">visibility</a>)
 </pre>
 
 Generates `outputs` by running a nushell command.
@@ -41,6 +41,7 @@ Generates `outputs` by running a nushell command.
 | <a id="nu_genrule-target_compatible_with"></a>target_compatible_with |  <a href="https://bazel.build/reference/be/common-definitions#common.target_compatible_with">Inherited rule attribute</a>   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `None`  |
 | <a id="nu_genrule-testonly"></a>testonly |  <a href="https://bazel.build/reference/be/common-definitions#common.testonly">Inherited rule attribute</a>   | Boolean; <a href="https://bazel.build/reference/be/common-definitions#configurable-attributes">nonconfigurable</a> | optional |  `None`  |
 | <a id="nu_genrule-toolchains"></a>toolchains |  <a href="https://bazel.build/reference/be/common-definitions#common.toolchains">Inherited rule attribute</a>   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `None`  |
+| <a id="nu_genrule-tools"></a>tools |  Executable targets that `cmd` can call; their resolved paths are in `$bazel.tools`, in order.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="nu_genrule-visibility"></a>visibility |  The visibility to be passed to this macro's exported targets. It always implicitly includes the location where this macro is instantiated, so this attribute only needs to be explicitly set if you want the macro's targets to be additionally visible somewhere else.   | <a href="https://bazel.build/concepts/labels">List of labels</a>; <a href="https://bazel.build/reference/be/common-definitions#configurable-attributes">nonconfigurable</a> | optional |  |
 
 
