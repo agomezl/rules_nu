@@ -130,11 +130,9 @@ def test_tools():
         main = "//:srcs/call_tool.nu",
         tools = [":tool"],
     )
-
     wrapped_binary_test(
         name = "tools_test",
         binary = ":tools",
-        input = ":tool",
     )
 
     return "tools_test"

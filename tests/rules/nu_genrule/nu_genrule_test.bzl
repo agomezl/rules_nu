@@ -213,7 +213,7 @@ def test_tools():
         if ($bazel.tools | length) != 1 {
             error make {msg: $'Expected 1 tool, got ($bazel.tools | length)'}
         }
-        let out = (^($bazel.tools | get 0) | complete)
+        let out = ^$bazel.tools.0 | complete
         if $out.exit_code != 0 or $out.stdout != "Some Data!\n" {
             error make {msg: $'unexpected tool result: ($out)'}
         }
