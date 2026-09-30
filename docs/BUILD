@@ -5,9 +5,12 @@ load("@stardoc//stardoc:stardoc.bzl", "stardoc")
 bzl_library(
     name = "rules_nu",
     srcs = [
-        "//nu:bzl_srcs",
-        "//nu/private:bzl_srcs",
-        "//nu/toolchains:bzl_srcs",
+        "//nu:rules.bzl",
+        "//nu/private:nu_binary.bzl",
+        "//nu/private:nu_library.bzl",
+        "//nu/private:nu_genrule.bzl",
+        "//nu/private:providers.bzl",
+        "//nu/toolchains:defs.bzl",
     ],
     deps = ["@hermetic_launcher//launcher:lib_bzl"],
 )
