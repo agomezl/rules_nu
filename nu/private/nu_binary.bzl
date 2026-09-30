@@ -52,10 +52,10 @@ nu_binary = rule(
             allow_files = True,
         ),
         "tools": attr.label_list(
-            doc = """Executable targets, built for the exec platform, that the script can
-            call. Their runfiles are merged into this binary's runfiles, so
-            they can be located with `runfiles rlocation`.""",
-            cfg = "exec",
+            doc = """Executable targets that the script can call. They are built in the
+            same configuration as this binary, so they run wherever it does.
+            Their runfiles are merged into this binary's runfiles, so they can
+            be located with `runfiles rlocation`.""",
         ),
         "_env_config": attr.label(
             doc = "Nushell env.nu file",
