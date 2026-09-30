@@ -14,26 +14,51 @@ _write_nu_script = rule(
     },
 )
 
+def _label_aliases(label, rule_label):
+    """Spellings of `label` that `target location` accepts, canonical one first."""
+    aliases = [str(label)]
+    if label.repo_name == rule_label.repo_name:
+        aliases.append("//{}:{}".format(label.package, label.name))
+        if label.name == label.package.split("/")[-1]:
+            aliases.append("//{}".format(label.package))
+        if label.package == rule_label.package:
+            aliases.append(":{}".format(label.name))
+    return aliases
+
+def _target_files(target):
+    """Runfiles-relative paths that `target` expands to for `target location(s)`."""
+    executable = target[DefaultInfo].files_to_run.executable
+    files = [executable] if executable else target[DefaultInfo].files.to_list()
+    return [launcher.to_rlocation_path(f) for f in files]
+
 def _nu_genrule_run_impl(ctx):
-    input_args = ctx.actions.args()
-    input_args.add_all([launcher.to_rlocation_path(f) for f in ctx.files.inputs])
-    input_args.use_param_file("%s", use_always = True)
+    targets = []
+    seen = {}
+    for target in ctx.attr.inputs + ctx.attr.tools + ctx.attr.data:
+        if target.label in seen:
+            continue
+        seen[target.label] = True
+        files = _target_files(target)
+        for alias in _label_aliases(target.label, ctx.label):
+            targets.append({"key": alias, "files": files})
+
+    targets_file = ctx.actions.declare_file("{}.targets.json".format(ctx.label.name))
+    ctx.actions.write(targets_file, json.encode(targets))
 
     output_args = ctx.actions.args()
     output_args.add_all(ctx.outputs.outputs)
     output_args.use_param_file("%s", use_always = True)
 
-    tool_args = ctx.actions.args()
-    tool_args.add_all([
-        launcher.to_rlocation_path(tool[DefaultInfo].files_to_run.executable)
-        for tool in ctx.attr.tools
-    ])
-    tool_args.use_param_file("%s", use_always = True)
+    targets_args = ctx.actions.args()
+    targets_args.add(targets_file)
 
     ctx.actions.run(
         executable = ctx.executable.binary,
-        arguments = [input_args, output_args, tool_args],
-        inputs = depset(ctx.files.inputs),
+        arguments = [output_args, targets_args],
+        inputs = depset(
+            [targets_file] + ctx.files.inputs,
+            transitive = [d[DefaultInfo].files for d in ctx.attr.data],
+        ),
         tools = [tool[DefaultInfo].files_to_run for tool in ctx.attr.tools],
         outputs = ctx.outputs.outputs,
         mnemonic = "NuGenrule",
@@ -47,20 +72,22 @@ _nu_genrule_run = rule(
         "binary": attr.label(executable = True, cfg = "exec", mandatory = True),
         "inputs": attr.label_list(allow_files = True),
         "tools": attr.label_list(cfg = "exec"),
+        "data": attr.label_list(allow_files = True),
         "outputs": attr.output_list(mandatory = True, allow_empty = False),
     },
 )
 
 def _nu_genrule_script(cmd):
-    return """def main [inputs_file: string, outputs_file: string, tools_file: string] {{
+    return """use nu/private/target.nu
+
+def main [outputs_file: string, targets_file: string] {{
     let outputs = (open $outputs_file | lines)
-    let input_keys = (open $inputs_file | lines)
-    let tool_keys = (open $tools_file | lines)
-    let rf = (runfiles create)
+    $env._NU_GENRULE = {{
+        targets: (open $targets_file)
+        runfiles: (runfiles create)
+    }}
     let bazel = {{
         outputs: $outputs
-        inputs: ($input_keys | each {{|key| runfiles rlocation $rf $key }})
-        tools: ($tool_keys | each {{|key| runfiles rlocation $rf $key }})
     }}
 {cmd}
 }}
@@ -90,7 +117,7 @@ def _nu_genrule_impl(name, visibility, cmd, outputs, inputs, tools, deps, data, 
     nu_binary(
         name = binary_name,
         main = script_name,
-        deps = [data_deps_library],
+        deps = [data_deps_library, Label("//nu/private:target")],
         data = inputs,
         tools = tools,
         cfg = "exec",
@@ -102,6 +129,7 @@ def _nu_genrule_impl(name, visibility, cmd, outputs, inputs, tools, deps, data, 
         binary = binary_name,
         inputs = inputs,
         tools = tools,
+        data = data,
         outputs = outputs,
         **kwargs
     )
@@ -122,19 +150,19 @@ nu_genrule = macro(
             allow_empty = False,
         ),
         "inputs": attr.label_list(
-            doc = "Input files accessible via `$bazel.inputs` (and runfiles).",
+            doc = "Input files, addressable by label via `target location(s)` (and runfiles).",
         ),
         "tools": attr.label_list(
             doc = """
-            Executable targets that `cmd` can call;
-            their resolved paths are in `$bazel.tools`, in order.
+            Executable targets that `cmd` can call; their resolved paths are
+            available via `target location`.
             """,
         ),
         "deps": attr.label_list(
             doc = "Nushell modules dependencies available to `cmd` via `use`.",
         ),
         "data": attr.label_list(
-            doc = "Additional files available to `cmd` via `runfiles`.",
+            doc = "Additional files available to `cmd` via `target location(s)` and `runfiles`.",
         ),
     },
 )

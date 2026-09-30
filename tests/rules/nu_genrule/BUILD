@@ -1,6 +1,10 @@
 load(
     ":nu_genrule_test.bzl",
     "test_data",
+    "test_label_spellings",
+    "test_location_data",
+    "test_location_errors",
+    "test_locations",
     "test_inputs_multiple",
     "test_inputs_single",
     "test_modules_available",
@@ -23,6 +27,10 @@ test_suite(
         test_data(),
         test_transitive_data(),
         test_tools(),
+        test_label_spellings(),
+        test_locations(),
+        test_location_errors(),
+        test_location_data(),
     ],
     visibility = ["//visibility:public"],
 )

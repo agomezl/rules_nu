@@ -52,8 +52,14 @@ nu_binary(
 
 nu_genrule(
     name = "greeting",
-    cmd = """^$bazel.tools.0 'World!' | save $bazel.outputs.0""",
+    cmd = """^(target location ":hello") 'World!' | save $bazel.outputs.0""",
     tools = [":hello"],
     outputs = ["greeting.txt"],
 )
 ```
+
+Inside `cmd`, `target location "<label>"` returns the path of the single file a
+label from `inputs`, `tools` or `data` expands to (like `$(location ...)` in
+Bazel's `genrule`), and `target locations "<label>"` returns a list of all of
+its files. Labels may be written as `:name`, `//pkg:name`, `//pkg` or
+`@@canonical_repo//pkg:name`. Output paths are in `$bazel.outputs`.
