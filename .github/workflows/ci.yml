@@ -31,7 +31,9 @@ jobs:
             ${{ matrix.bazel != '.bazelversion' && 'common --lockfile_mode=update' || '' }}
       - name: "Housekeeping"
         if: matrix.bazel == '.bazelversion'
-        run: bazel test //tools:preset.update_test
+        run: |
+          bazel test //tools:preset.update_test
+          bazel test //docs/...
       - name: "Check build"
         run: bazel build //...
       - name: "Run tests"
