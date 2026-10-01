@@ -32,31 +32,29 @@ def _target_files(target):
     return [launcher.to_rlocation_path(f) for f in files]
 
 def _nu_genrule_run_impl(ctx):
-    targets = {
+    target_mappings = {
         alias: files
         for target in ctx.attr.inputs + ctx.attr.tools + ctx.attr.data
         for files in [_target_files(target)]
         for alias in _label_aliases(target.label, ctx.label)
     }
 
-    targets_file = ctx.actions.declare_file("{}.targets.json".format(ctx.label.name))
-    ctx.actions.write(targets_file, json.encode(targets))
+    target_mappings_file = ctx.actions.declare_file("{}.targets.json".format(ctx.label.name))
+    ctx.actions.write(target_mappings_file, json.encode(target_mappings))
 
     output_args = ctx.actions.args()
     output_args.add_all(ctx.outputs.outputs)
     output_args.use_param_file("%s", use_always = True)
 
     targets_args = ctx.actions.args()
-    targets_args.add(targets_file)
+    targets_args.add(target_mappings_file)
 
     ctx.actions.run(
         executable = ctx.executable.binary,
         arguments = [output_args, targets_args],
-        inputs = depset(
-            [targets_file] + ctx.files.inputs,
-            transitive = [d[DefaultInfo].files for d in ctx.attr.data],
-        ),
-        tools = [tool[DefaultInfo].files_to_run for tool in ctx.attr.tools],
+        # We only need to reference files created in this rule since all other
+        # files are already available via the binary's `runfiles`.
+        inputs = depset([target_mappings_file]),
         outputs = ctx.outputs.outputs,
         mnemonic = "NuGenrule",
         progress_message = "Running nu_genrule %{label}",
