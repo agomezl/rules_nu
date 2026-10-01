@@ -4,14 +4,14 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_nu//nu:rules.bzl", "nu_binary", "nu_genrule", "nu_library")
 
-# ── TC-01: Single input appears in $bazel.inputs ──────────────────────────────
+# ── TC-01: Single input is found via `target location` ────────────────────────
 
 def test_inputs_single():
     nu_genrule(
         name = "inputs_single",
         cmd = r"""
-            if ($bazel.inputs | length) != 1 {
-                error make {msg: $'Expected 1 input, got ($bazel.inputs | length)'}
+            if (open (target location "//:fixtures/input.txt") | str trim) != "input content" {
+                error make {msg: "unexpected input.txt content"}
             }
             "ok" | save $bazel.outputs.0
         """,
@@ -45,20 +45,17 @@ def test_outputs_single():
     )
     return "outputs_single_test"
 
-# ── TC-03: Multiple inputs all appear in $bazel.inputs ────────────────────────
+# ── TC-03: Multiple inputs are each found via `target location` ───────────────
 
 def test_inputs_multiple():
     nu_genrule(
         name = "inputs_multiple",
         cmd = r"""
-            if ($bazel.inputs | length) != 2 {
-                error make {msg: $'Expected 2 inputs, got ($bazel.inputs | length)'}
+            if not ((target location "//:fixtures/input1.txt") | str ends-with "input1.txt") {
+                error make {msg: "input1.txt not found"}
             }
-            if not ($bazel.inputs | any {|p| $p | str ends-with "input1.txt"}) {
-                error make {msg: "input1.txt not found in $bazel.inputs"}
-            }
-            if not ($bazel.inputs | any {|p| $p | str ends-with "input2.txt"}) {
-                error make {msg: "input2.txt not found in $bazel.inputs"}
+            if not ((target location "//:fixtures/input2.txt") | str ends-with "input2.txt") {
+                error make {msg: "input2.txt not found"}
             }
             "ok" | save $bazel.outputs.0
         """,
@@ -210,10 +207,7 @@ def test_tools():
     nu_genrule(
         name = "tools",
         cmd = r"""
-        if ($bazel.tools | length) != 1 {
-            error make {msg: $'Expected 1 tool, got ($bazel.tools | length)'}
-        }
-        let out = ^$bazel.tools.0 | complete
+        let out = ^(target location ":tool") | complete
         if $out.exit_code != 0 or $out.stdout != "Some Data!\n" {
             error make {msg: $'unexpected tool result: ($out)'}
         }
@@ -228,3 +222,113 @@ def test_tools():
         targets = [":tools"],
     )
     return "tools_test"
+
+# ── TC-10: Label spellings resolve to the same file ───────────────────────────
+
+def test_label_spellings():
+    nu_binary(
+        name = "label_spellings_tool",
+        main = "//:srcs/hello.nu",
+    )
+    nu_genrule(
+        name = "label_spellings",
+        cmd = r"""
+        let canonical = (target location "@@//:fixtures/input.txt")
+        for spelling in ["//:fixtures/input.txt"] {
+            if (target location $spelling) != $canonical {
+                error make {msg: $'($spelling) does not match canonical label'}
+            }
+        }
+        let local = (target location ":label_spellings_tool")
+        if $local != (target location "//nu_genrule:label_spellings_tool") {
+            error make {msg: "relative and package-absolute labels differ"}
+        }
+        "ok" | save $bazel.outputs.0
+        """,
+        inputs = ["//:fixtures/input.txt"],
+        tools = [":label_spellings_tool"],
+        outputs = [":label_spellings.out"],
+    )
+
+    build_test(
+        name = "label_spellings_test",
+        targets = [":label_spellings"],
+    )
+    return "label_spellings_test"
+
+# ── TC-11: `target locations` expands a filegroup ─────────────────────────────
+
+def test_locations():
+    native.filegroup(
+        name = "locations_group",
+        srcs = ["//:fixtures/input1.txt", "//:fixtures/input2.txt"],
+    )
+    nu_genrule(
+        name = "locations",
+        cmd = r"""
+        let files = (target locations ":locations_group")
+        if ($files | length) != 2 {
+            error make {msg: $'Expected 2 files, got ($files | length)'}
+        }
+        "ok" | save $bazel.outputs.0
+        """,
+        inputs = [":locations_group"],
+        outputs = [":locations.out"],
+    )
+
+    build_test(
+        name = "locations_test",
+        targets = [":locations"],
+    )
+    return "locations_test"
+
+# ── TC-12: `target location` errors on multiple files or unknown labels ───────
+
+def test_location_errors():
+    native.filegroup(
+        name = "location_errors_group",
+        srcs = ["//:fixtures/input1.txt", "//:fixtures/input2.txt"],
+    )
+    nu_genrule(
+        name = "location_errors",
+        cmd = r"""
+        let multi = (try { target location ":location_errors_group"; "no error" } catch {|e| $e.msg })
+        if not ($multi | str contains "expected exactly 1") {
+            error make {msg: $'unexpected error for multi-file label: ($multi)'}
+        }
+        let unknown = (try { target location "//:nope"; "no error" } catch {|e| $e.msg })
+        if not ($unknown | str contains "unknown label") {
+            error make {msg: $'unexpected error for unknown label: ($unknown)'}
+        }
+        "ok" | save $bazel.outputs.0
+        """,
+        inputs = [":location_errors_group"],
+        outputs = [":location_errors.out"],
+    )
+
+    build_test(
+        name = "location_errors_test",
+        targets = [":location_errors"],
+    )
+    return "location_errors_test"
+
+# ── TC-13: `data` targets are addressable ─────────────────────────────────────
+
+def test_location_data():
+    nu_genrule(
+        name = "location_data",
+        cmd = r"""
+        if (open (target location "//:data/data1.txt")) != "Some Data!\n" {
+            error make {msg: "unexpected data1.txt content"}
+        }
+        "ok" | save $bazel.outputs.0
+        """,
+        data = ["//:data/data1.txt"],
+        outputs = [":location_data.out"],
+    )
+
+    build_test(
+        name = "location_data_test",
+        targets = [":location_data"],
+    )
+    return "location_data_test"

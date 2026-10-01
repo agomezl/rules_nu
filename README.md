@@ -52,7 +52,7 @@ nu_binary(
 
 nu_genrule(
     name = "greeting",
-    cmd = """^$bazel.tools.0 'World!' | save $bazel.outputs.0""",
+    cmd = """^(target location ":hello") 'World!' | save $bazel.outputs.0""",
     tools = [":hello"],
     outputs = ["greeting.txt"],
 )
