@@ -4,8 +4,8 @@
 # The generated genrule script stores the label table and the runfiles handle
 # in `$env._NU_GENRULE` before running `cmd`:
 #
-#   targets:  table<key: string, files: list<string>>  (runfiles paths)
-#   runfiles: record                                   (see `runfiles create`)
+#   targets:  record<string, list<string>>  (runfiles paths)
+#   runfiles: record                        (see `runfiles create`)
 #
 #   use nu/private/target.nu
 #   target location "//some:target"
@@ -13,12 +13,12 @@
 
 def lookup [label: string]: nothing -> list<string> {
     let state = $env._NU_GENRULE
-    let hit = ($state.targets | where key == $label)
+    let hit = ($state.targets | get -o $label)
     if ($hit | is-empty) {
-        let known = ($state.targets | get key | str join ", ")
-        error make { msg: $"unknown label '($label)', expected one of: ($known)" }
+        let known = ($state.targets | columns | str join "\n")
+        error make { msg: $"unknown label '($label)', expected one of: \n ($known)" }
     }
-    ($hit | first).files | each {|path| runfiles rlocation $state.runfiles $path }
+    $hit | each {|path| runfiles rlocation $state.runfiles $path }
 }
 
 # Resolved path of the single file that `label` expands to.

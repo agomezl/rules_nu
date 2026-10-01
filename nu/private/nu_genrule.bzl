@@ -32,15 +32,12 @@ def _target_files(target):
     return [launcher.to_rlocation_path(f) for f in files]
 
 def _nu_genrule_run_impl(ctx):
-    targets = []
-    seen = {}
-    for target in ctx.attr.inputs + ctx.attr.tools + ctx.attr.data:
-        if target.label in seen:
-            continue
-        seen[target.label] = True
-        files = _target_files(target)
-        for alias in _label_aliases(target.label, ctx.label):
-            targets.append({"key": alias, "files": files})
+    targets = {
+        alias: files
+        for target in ctx.attr.inputs + ctx.attr.tools + ctx.attr.data
+        for files in [_target_files(target)]
+        for alias in _label_aliases(target.label, ctx.label)
+    }
 
     targets_file = ctx.actions.declare_file("{}.targets.json".format(ctx.label.name))
     ctx.actions.write(targets_file, json.encode(targets))
@@ -140,7 +137,12 @@ nu_genrule = macro(
     inherit_attrs = "common",
     attrs = {
         "cmd": attr.string(
-            doc = "The nushell command to run.",
+            doc = """
+            The nushell command to run. The file path in a target can be
+            expanded using `target location "<label>"` with labels from
+            `inputs`, `tools` or `data`. For targets with multiple files, use
+            `target locations "<label>"`.
+            """,
             mandatory = True,
             configurable = False,
         ),
