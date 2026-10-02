@@ -56,8 +56,8 @@ def _nu_impl(mctx):
 _toolchain = tag_class(attrs = {
     "version": attr.string(
         doc = """
-        Nushell version to fetch (e.g. '0.114.0'). Its hashes are read from the
-        release's SHA256SUMS and recorded in MODULE.bazel.lock.
+        Nushell version to fetch (e.g. '0.114.0'). Its hash is computed on first
+        download and recorded in MODULE.bazel.lock.
         """,
         mandatory = True,
     ),
