@@ -1,2 +1,2 @@
-common:ci --config=re
+common:ci --config=re --config=cache --config=bes
 common:ci --build_metadata=ROLE=CI
