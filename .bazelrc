@@ -1,6 +1,7 @@
 ########################
 # Import bazelrc configs
 import %workspace%/tools/rc/bes.bazelrc
+import %workspace%/tools/rc/cache.bazelrc
 import %workspace%/tools/rc/re.bazelrc
 import %workspace%/tools/rc/ci.bazelrc
 
