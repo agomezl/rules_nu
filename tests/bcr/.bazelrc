@@ -1,2 +1,3 @@
 import %workspace%/rc/bes.bazelrc
+import %workspace%/rc/cache.bazelrc
 common:ci --build_metadata=ROLE=CI
