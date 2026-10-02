@@ -20,27 +20,50 @@ def _archive_url(version, platform):
     return "https://github.com/nushell/nushell/releases/download/{v}/nu-{v}-{p}.{e}".format(
         v = version,
         p = platform,
-        e = "zip" if "windows" in platform else "tar.gz",
+        e = _ext(platform),
     )
 
-def resolve_release(mctx, facts, version, os, arch):
+def _ext(platform):
+    return "zip" if "windows" in platform else "tar.gz"
+
+def resolve_release(mctx, known, facts, version, os, arch):
     """Returns (version, platform, sha256) for a release.
 
-    An empty *version* means the latest release. Values are looked up in
-    *facts* (persisted in MODULE.bazel.lock); anything missing is downloaded
-    once to compute its hash.
+    An empty *version* means the latest release. Hashes come from *known*
+    (the facts persisted in MODULE.bazel.lock) or, when missing, from the
+    SHA256SUMS file published with the release. The hashes of every platform
+    of the version are recorded in *facts*, so using another platform later
+    does not change the lockfile.
     """
     platform = _get_platform_identifier(os, arch)
-    if not version:
-        version = facts.get("latest")
-    if not version:
-        mctx.download("https://api.github.com/repos/nushell/nushell/releases/latest", "latest.json")
-        version = json.decode(mctx.read("latest.json"))["tag_name"]
-    sha256 = facts.get(version + "/" + platform)
-    if not sha256:
-        # module_ctx can't delete files; the archive is overwritten by the next one.
-        sha256 = mctx.download(_archive_url(version, platform), "nu_archive").sha256
-    return version, platform, sha256
+    version = version or known.get("latest")
+    sums = {}
+    if not version or version + "/" + platform not in known:
+        mctx.download(
+            "https://github.com/nushell/nushell/releases/{}/SHA256SUMS".format(
+                "download/" + version if version else "latest/download",
+            ),
+            "SHA256SUMS",
+        )
+        assets = {}  # asset name -> sha256
+        for line in mctx.read("SHA256SUMS").splitlines():
+            sha256, _, asset = line.partition("  ")
+            assets[asset] = sha256
+        if not version:
+            suffix = "-{}.{}".format(platform, _ext(platform))
+            version = [a for a in assets if a.startswith("nu-") and a.endswith(suffix)][0][len("nu-"):-len(suffix)]
+        for p in NUSHELL_CONSTRAINTS_MAP:
+            sha256 = assets.get("nu-{}-{}.{}".format(version, p, _ext(p)))
+            if sha256:
+                sums[p] = sha256
+
+    for p in NUSHELL_CONSTRAINTS_MAP:
+        sha256 = sums.get(p) or known.get(version + "/" + p)
+        if sha256:
+            facts[version + "/" + p] = sha256
+    if platform not in sums and version + "/" + platform not in known:
+        fail("No Nushell {} release asset for {}".format(version, platform))
+    return version, platform, facts[version + "/" + platform]
 
 def create_version(version, platform, sha256):
     """Creates an http_archive for *version* on the given *platform*.

@@ -212,7 +212,7 @@
   "moduleExtensions": {
     "//nu:extensions.bzl%nu": {
       "general": {
-        "bzlTransitiveDigest": "0hFavnnSnKyoAUlcH7Yx8DIy6x327TWHzF+qwRAML7s=",
+        "bzlTransitiveDigest": "YTE5Jx+bniYzyv6CsHMhklZ1jIjHlidLZgSuzaJ4bpI=",
         "usagesDigest": "I9jLcl6YumDsEXnLHSJ+eT2JU2GDA0FItSB7q3jfbaI=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools",
@@ -527,6 +527,10 @@
   },
   "facts": {
     "//nu:extensions.bzl%nu": {
+      "0.116.0/aarch64-apple-darwin": "8d3169054b0e8f04b60b38ac1673acf61cbf66c6d8073ebc732d5bc108b3add6",
+      "0.116.0/aarch64-unknown-linux-gnu": "bd854a1c7286cabb7830e744810c27152e3d332192e75cea9e3c92dced4e3dce",
+      "0.116.0/x86_64-apple-darwin": "c03c8cc16e7a1d616d0dd5992b114ae28d84b622e00b43905118147cc0bccdaf",
+      "0.116.0/x86_64-pc-windows-msvc": "745b165d847e34b5dea80c2cfc867383c02b907d288a59a44b25e39bcac14015",
       "0.116.0/x86_64-unknown-linux-gnu": "9f73a6913f9515a621bd916dc91d7f3e0494e488161c2d686f6b98ffa0555945",
       "latest": "0.116.0"
     }

@@ -38,10 +38,9 @@ def _nu_impl(mctx):
             os = _canonical_os(tag.os or mctx.os.name)
             arch = _canonical_arch(tag.arch or mctx.os.arch)
             version = getattr(tag, "version", "")
-            resolved, platform, sha256 = resolve_release(mctx, mctx.facts, version, os, arch)
+            resolved, platform, sha256 = resolve_release(mctx, mctx.facts, facts, version, os, arch)
             if not version:
                 facts["latest"] = resolved
-            facts[resolved + "/" + platform] = sha256
             if (resolved, platform) not in seen:
                 seen[(resolved, platform)] = True
                 repo, constraints = create_version(resolved, platform, sha256)
@@ -56,8 +55,8 @@ def _nu_impl(mctx):
 _toolchain = tag_class(attrs = {
     "version": attr.string(
         doc = """
-        Nushell version to fetch (e.g. '0.114.0'). Its hash is computed on first
-        download and recorded in MODULE.bazel.lock.
+        Nushell version to fetch (e.g. '0.114.0'). Its hashes are read from the
+        release's SHA256SUMS and recorded in MODULE.bazel.lock.
         """,
         mandatory = True,
     ),

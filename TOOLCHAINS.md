@@ -13,8 +13,8 @@ register_toolchains("@nu_toolchains//:all")
 ```
 
 `nu.latest()` resolves to the latest Nushell release the first time it is
-evaluated. The resolved version and the archive hashes (computed on
-first download) are recorded as facts in `MODULE.bazel.lock`, so later
+evaluated. The resolved version and the hashes of all
+platforms (read from the release's `SHA256SUMS`) are recorded as facts in `MODULE.bazel.lock`, so later
 builds are reproducible and need no extra lookup. To move to a newer release,
 remove the `//nu:extensions.bzl%nu` entry under `facts` in the lockfile and
 run `bazel mod deps`. The correct binary for the host platform is fetched
