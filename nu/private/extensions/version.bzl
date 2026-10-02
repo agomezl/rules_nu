@@ -38,8 +38,8 @@ def resolve_release(mctx, facts, version, os, arch):
         version = json.decode(mctx.read("latest.json"))["tag_name"]
     sha256 = facts.get(version + "/" + platform)
     if not sha256:
+        # module_ctx can't delete files; the archive is overwritten by the next one.
         sha256 = mctx.download(_archive_url(version, platform), "nu_archive").sha256
-        mctx.delete("nu_archive")
     return version, platform, sha256
 
 def create_version(version, platform, sha256):
