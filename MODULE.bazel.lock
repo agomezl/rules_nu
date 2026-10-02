@@ -212,44 +212,37 @@
   "moduleExtensions": {
     "//nu:extensions.bzl%nu": {
       "general": {
-        "bzlTransitiveDigest": "hojErB5GE6xin7fItIJC3M4NbFAM/fI3WO1vdvSe+rY=",
-        "usagesDigest": "I9jLcl6YumDsEXnLHSJ+eT2JU2GDA0FItSB7q3jfbaI=",
+        "bzlTransitiveDigest": "svtG8j4UjYn/QHGBKY7lk1BXz8sYdHuH2lVAQFKjw5I=",
+        "usagesDigest": "xcst0ZfLBj9OjA+TDj0hYG5ukOfn0cfyq3qMv+CPGi8=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools",
           "REPO_MAPPING:,rules_nu "
         ],
         "generatedRepoSpecs": {
-          "nu_0_114_0_aarch64_apple_darwin": {
+          "nu_0_116_0_x86_64_unknown_linux_gnu": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
-              "url": "https://github.com/nushell/nushell/releases/download/0.114.0/nu-0.114.0-aarch64-apple-darwin.tar.gz",
-              "sha256": "c98f7deedd41023fe6dc4567abb368c9442bda62989b91e179e095cbb457ce58",
-              "build_file_content": "\nload(\"@rules_nu//nu/toolchains:defs.bzl\", \"nushell_toolchain\")\n\nexports_files([\"nu-0.114.0-aarch64-apple-darwin/nu\"])\n\nalias(\n    name = \"nu_cmd\",\n    actual = \"nu-0.114.0-aarch64-apple-darwin/nu\",\n    visibility = [\"//visibility:public\"],\n)\n\nnushell_toolchain(\n    name = \"toolchain_impl\",\n    nu = \":nu_cmd\",\n)\n"
-            }
-          },
-          "nu_0_114_0_x86_64_unknown_linux_gnu": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "url": "https://github.com/nushell/nushell/releases/download/0.114.0/nu-0.114.0-x86_64-unknown-linux-gnu.tar.gz",
-              "sha256": "3896777ebf3678f6d41736a5e995ba8360b338eb73c713254fc024e08ec72289",
-              "build_file_content": "\nload(\"@rules_nu//nu/toolchains:defs.bzl\", \"nushell_toolchain\")\n\nexports_files([\"nu-0.114.0-x86_64-unknown-linux-gnu/nu\"])\n\nalias(\n    name = \"nu_cmd\",\n    actual = \"nu-0.114.0-x86_64-unknown-linux-gnu/nu\",\n    visibility = [\"//visibility:public\"],\n)\n\nnushell_toolchain(\n    name = \"toolchain_impl\",\n    nu = \":nu_cmd\",\n)\n"
+              "url": "https://github.com/nushell/nushell/releases/download/0.116.0/nu-0.116.0-x86_64-unknown-linux-gnu.tar.gz",
+              "sha256": "9f73a6913f9515a621bd916dc91d7f3e0494e488161c2d686f6b98ffa0555945",
+              "strip_prefix": "nu-0.116.0-x86_64-unknown-linux-gnu",
+              "build_file_content": "load(\"@rules_nu//nu/toolchains:defs.bzl\", \"nushell_toolchain\")\n\nexports_files([\"nu\"])\n\nalias(\n    name = \"nu_cmd\",\n    actual = \"nu\",\n    visibility = [\"//visibility:public\"],\n)\n\nnushell_toolchain(\n    name = \"toolchain_impl\",\n    nu = \":nu_cmd\",\n)\n"
             }
           },
           "nu_toolchains": {
-            "repoRuleId": "@@//nu/private/extensions:hub_repo.bzl%nu_toolchains_hub",
+            "repoRuleId": "@@//nu/private:extensions.bzl%_nu_toolchains_hub",
             "attributes": {
               "toolchain_repos": {
-                "nu_0_114_0_aarch64_apple_darwin": [
-                  "@platforms//os:macos",
-                  "@platforms//cpu:aarch64"
-                ],
-                "nu_0_114_0_x86_64_unknown_linux_gnu": [
+                "nu_0_116_0_x86_64_unknown_linux_gnu": [
                   "@platforms//os:linux",
                   "@platforms//cpu:x86_64"
                 ]
               }
             }
           }
+        },
+        "moduleExtensionMetadata": {
+          "useAllRepos": "NO",
+          "reproducible": false
         }
       }
     },
@@ -532,5 +525,10 @@
       }
     }
   },
-  "facts": {}
+  "facts": {
+    "//nu:extensions.bzl%nu": {
+      "0.116.0/x86_64-unknown-linux-gnu": "9f73a6913f9515a621bd916dc91d7f3e0494e488161c2d686f6b98ffa0555945",
+      "latest": "0.116.0"
+    }
+  }
 }

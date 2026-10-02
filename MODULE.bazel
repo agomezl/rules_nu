@@ -6,8 +6,6 @@ bazel_dep(name = "hermetic_launcher", version = "0.0.15")
 bazel_dep(name = "platforms", version = "1.1.0")
 
 nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
-nu.latest()
-
 use_repo(nu, "nu_toolchains")
 register_toolchains("@nu_toolchains//:all")
 
@@ -31,4 +29,4 @@ register_toolchains(
 
 # Explicitly add linux toolchain for remote execution
 nu_dev = use_extension("@rules_nu//nu:extensions.bzl", "nu", dev_dependency = True)
-nu_dev.latest(os = "linux", arch = "x86_64")
+nu_dev.toolchain(os = "linux", arch = "x86_64")

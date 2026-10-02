@@ -1,62 +1,41 @@
 # Toolchain setup
 
-## Latest version (simplest)
-
-When you add `rules_nu` to your `MODULE.bazel`, it picks the newest available
-version automatically using `nu.latest()`:
+## Default: latest release
 
 ```python
 nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
-nu.latest()
 use_repo(nu, "nu_toolchains")
 register_toolchains("@nu_toolchains//:all")
 ```
 
-`nu.latest()` resolves to the highest version present in the release database
-at the time of the `rules_nu` release you are using — no network lookup is
-performed. The correct binary for the host platform is fetched automatically.
+With no tags, the latest Nushell release for the host platform is used. There
+is no version list in `rules_nu`: archive hashes are read from the
+`SHA256SUMS` file published with each Nushell release and stored as module
+extension *facts* in `MODULE.bazel.lock`. Later builds use the locked version
+and hashes without network access. To move to a newer release, refresh the
+lockfile entry (e.g. remove the `//nu:extensions.bzl%nu` entry under `facts`
+and run `bazel mod deps`).
 
 ## Pinned version
 
-To lock to a specific Nushell release, use `nu.toolchain` with an explicit
-version.
-
 ```python
-bazel_dep(name = "rules_nu", version = "0.1.0")
-
-nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
 nu.toolchain(version = "0.114.0")
-use_repo(nu, "nu_toolchains")
-register_toolchains("@nu_toolchains//:all")
 ```
-
-Supported versions are listed in
-[`nu/private/extensions/defs.bzl`](nu/private/extensions/defs.bzl).
 
 ## Multi-platform / remote execution
 
-Both `nu.latest` and `nu.toolchain` default to the host platform. For builds
-with heterogeneous execution platforms (e.g. mixed Linux and macOS remote
-workers), add one tag per target platform:
+`nu.toolchain` defaults to the host platform. For heterogeneous execution
+platforms, add one tag per platform (`version` may be omitted for latest):
 
 ```python
-nu.latest()  # host platform
-nu.latest(os = "linux",    arch = "x86_64")
-nu.latest(os = "linux",    arch = "aarch64")
-nu.latest(os = "mac os x", arch = "aarch64")
+nu.toolchain(os = "linux",    arch = "x86_64")
+nu.toolchain(os = "linux",    arch = "aarch64")
+nu.toolchain(os = "mac os x", arch = "aarch64", version = "0.114.0")
 ```
 
-Or with an explicit pinned version:
-
-```python
-nu.toolchain(version = "0.114.0")  # host platform
-nu.toolchain(version = "0.114.0", os = "linux",    arch = "x86_64")
-nu.toolchain(version = "0.114.0", os = "linux",    arch = "aarch64")
-nu.toolchain(version = "0.114.0", os = "mac os x", arch = "aarch64")
-```
-
-Each extra tag registers an additional toolchain in `@nu_toolchains`; Bazel
-picks the right one at build time based on the execution platform.
+Bazel picks the matching toolchain from `@nu_toolchains` at build time.
+Supported platforms: Linux, macOS and Windows on x86_64, plus aarch64 on
+Linux and macOS.
 
 ## Custom binary
 

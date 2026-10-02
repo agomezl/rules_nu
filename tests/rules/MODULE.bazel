@@ -15,7 +15,7 @@ local_path_override(
 
 # Explicitly add linux toolchain for remote execution
 nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
-nu.latest(os = "linux", arch = "x86_64")
+nu.toolchain(os = "linux", arch = "x86_64")
 
 buildbuddy = use_extension(
     "@toolchains_buildbuddy//:extensions.bzl",
