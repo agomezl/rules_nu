@@ -212,8 +212,8 @@
   "moduleExtensions": {
     "//nu:extensions.bzl%nu": {
       "general": {
-        "bzlTransitiveDigest": "svtG8j4UjYn/QHGBKY7lk1BXz8sYdHuH2lVAQFKjw5I=",
-        "usagesDigest": "xcst0ZfLBj9OjA+TDj0hYG5ukOfn0cfyq3qMv+CPGi8=",
+        "bzlTransitiveDigest": "+PrysYM4uAehh0SHaozArse5Mll9kgtKSgX8ngSwNJI=",
+        "usagesDigest": "I9jLcl6YumDsEXnLHSJ+eT2JU2GDA0FItSB7q3jfbaI=",
         "recordedInputs": [
           "REPO_MAPPING:,bazel_tools bazel_tools",
           "REPO_MAPPING:,rules_nu "
@@ -225,11 +225,11 @@
               "url": "https://github.com/nushell/nushell/releases/download/0.116.0/nu-0.116.0-x86_64-unknown-linux-gnu.tar.gz",
               "sha256": "9f73a6913f9515a621bd916dc91d7f3e0494e488161c2d686f6b98ffa0555945",
               "strip_prefix": "nu-0.116.0-x86_64-unknown-linux-gnu",
-              "build_file_content": "load(\"@rules_nu//nu/toolchains:defs.bzl\", \"nushell_toolchain\")\n\nexports_files([\"nu\"])\n\nalias(\n    name = \"nu_cmd\",\n    actual = \"nu\",\n    visibility = [\"//visibility:public\"],\n)\n\nnushell_toolchain(\n    name = \"toolchain_impl\",\n    nu = \":nu_cmd\",\n)\n"
+              "build_file_content": "\nload(\"@rules_nu//nu/toolchains:defs.bzl\", \"nushell_toolchain\")\n\nexports_files([\"nu\"])\n\nalias(\n    name = \"nu_cmd\",\n    actual = \"nu\",\n    visibility = [\"//visibility:public\"],\n)\n\nnushell_toolchain(\n    name = \"toolchain_impl\",\n    nu = \":nu_cmd\",\n)\n"
             }
           },
           "nu_toolchains": {
-            "repoRuleId": "@@//nu/private:extensions.bzl%_nu_toolchains_hub",
+            "repoRuleId": "@@//nu/private/extensions:hub_repo.bzl%nu_toolchains_hub",
             "attributes": {
               "toolchain_repos": {
                 "nu_0_116_0_x86_64_unknown_linux_gnu": [

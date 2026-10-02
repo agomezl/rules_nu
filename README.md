@@ -29,15 +29,8 @@ into the same pitfalls as Bash or Python. We focus on three principles:
 bazel_dep(name = "rules_nu", version = "...")
 ```
 
-```python
-nu = use_extension("@rules_nu//nu:extensions.bzl", "nu")
-use_repo(nu, "nu_toolchains")
-register_toolchains("@nu_toolchains//:all")
-```
-
-The latest Nushell release for the host platform is fetched, and its version
-and hash are recorded in `MODULE.bazel.lock`. To pin a specific version, use
-`nu.toolchain(version = <version>)`.
+The latest Nushell release for the host platform is fetched, and its version and hashes are recorded in `MODULE.bazel.lock`.
+To pin a specific version instead, use `nu.toolchain(version = <version>)`.
 
 For multi-platform builds and custom binaries, see [TOOLCHAINS.md](TOOLCHAINS.md).
 
