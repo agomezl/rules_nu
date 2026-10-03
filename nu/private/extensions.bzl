@@ -33,28 +33,15 @@ def _nu_impl(mctx):
             repo, constraints = create_url(tag)
             hub_toolchains[repo] = constraints
 
-        for tag in mod.tags.latest:
+        for tag in mod.tags.latest + mod.tags.toolchain:
             os = _canonical_os(tag.os or mctx.os.name)
             arch = _canonical_arch(tag.arch or mctx.os.arch)
-            version = latest_version()
+            version = getattr(tag, "version", latest_version())
             key = (version, os, arch)
             if key not in seen:
                 seen[key] = True
                 repo, constraints = create_version(
                     version = version,
-                    os = os,
-                    arch = arch,
-                )
-                hub_toolchains[repo] = constraints
-
-        for tag in mod.tags.toolchain:
-            os = _canonical_os(tag.os or mctx.os.name)
-            arch = _canonical_arch(tag.arch or mctx.os.arch)
-            key = (tag.version, os, arch)
-            if key not in seen:
-                seen[key] = True
-                repo, constraints = create_version(
-                    version = tag.version,
                     os = os,
                     arch = arch,
                 )
