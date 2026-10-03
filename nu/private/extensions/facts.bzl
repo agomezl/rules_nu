@@ -6,7 +6,7 @@ def _download_sha256sums(mctx, *, path, version = None):
     else:  # Get the latest
         url = "{}/latest/download/SHA256SUMS".format(NUSHELL_RELEASES_URL)
 
-    result = mctx.download(path = path, url = url)
+    result = mctx.download(url = url, output = path)
     if not result.success:
         fail("Failed to download SHA256SUMS: {}".format(result.error))
 
@@ -23,13 +23,20 @@ def _fetch_version_facts(mctx, *, version):
     artifacts = {
         artifact: sha256
         for line in mctx.read(sha256sums).splitlines()
-        for artifact, sha256 in [line.split("  ")]
+        for sha256, artifact in [tuple(line.split("  "))]
         if artifact.endswith(".tar.gz") or artifact.endswith(".zip")
     }
 
     available_versions = {}
     for artifact, sha256 in artifacts.items():
-        id = artifact.removesuffix(".tar.gz").removesuffix(".zip")
+        id = (
+            artifact
+                .split(version)[1]
+                .removeprefix("-")
+                .removesuffix(".tar.gz")
+                .removesuffix(".zip")
+        )
+        available_versions[id] = {}
         available_versions[id]["sha256"] = sha256
         available_versions[id]["url"] = "{}/download/{}/{}".format(
             NUSHELL_RELEASES_URL,
@@ -52,11 +59,13 @@ def _resolve_latest(mctx):
 
 def update_facts(mctx, *, version, facts):
     new_facts = {}
-    if not version and not "latest" in facts:
-        version = _resolve_latest(mctx)
+    if not version:
+        version = facts.get("latest") or _resolve_latest(mctx)
         new_facts["latest"] = version
 
-    if version in facts:
-        return new_facts
+    new_facts[version] = (
+        facts.get(version) or
+        _fetch_version_facts(mctx, version = version)
+    )
 
-    new_facts[version] = _fetch_version_facts(mctx, version = version)
+    return new_facts

@@ -9,7 +9,7 @@ def _nu_impl(mctx):
     # Maps repo_name -> exec_compatible_with constraints for the hub.
     hub_toolchains = {}
     seen = {}
-    facts = mctx.facts
+    facts = {}
 
     for mod in mctx.modules:
         for tag in mod.tags.url:
@@ -22,12 +22,12 @@ def _nu_impl(mctx):
             facts |= update_facts(
                 mctx,
                 version = version_number,
-                facts = facts,
+                facts = mctx.facts,
             )
             version = resolve_version(
                 raw_version = version_number,
-                raw_os = tag.os or mctx.os,
-                raw_arch = tag.arch or mctx.arch,
+                raw_os = tag.os or mctx.os.name,
+                raw_arch = tag.arch or mctx.os.arch,
                 facts = facts,
             )
 
@@ -37,7 +37,7 @@ def _nu_impl(mctx):
                     name = version.repo_name,
                     url = version.url,
                     sha256 = version.sha256,
-                    build_file = version.build_file,
+                    build_file_content = version.build_file,
                 )
 
                 hub_toolchains[version.repo_name] = version.constraints
@@ -47,7 +47,7 @@ def _nu_impl(mctx):
         toolchain_repos = hub_toolchains,
     )
 
-    return mctx.metadata(
+    return mctx.extension_metadata(
         facts = facts,
     )
 

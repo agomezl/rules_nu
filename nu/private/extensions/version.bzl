@@ -34,7 +34,7 @@ def _get_platform_constraints(*, os, arch):
 def _get_repo_name(*, platform, version):
     return "nu_{}_{}".format(
         version.replace(".", "_"),
-        platform,
+        platform.replace("-", "_"),
     )
 
 def _get_build_file(*, os, version, id):
