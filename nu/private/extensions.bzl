@@ -47,6 +47,10 @@ def _nu_impl(mctx):
         toolchain_repos = hub_toolchains,
     )
 
+    return mctx.metadata(
+        facts = facts,
+    )
+
 _toolchain = tag_class(attrs = {
     "version": attr.string(
         doc = """
