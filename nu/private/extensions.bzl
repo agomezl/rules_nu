@@ -2,7 +2,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//nu/private/extensions:defs.bzl", "NUSHELL_PLATFORM_ID")
 load("//nu/private/extensions:facts.bzl", "update_facts")
 load("//nu/private/extensions:hub_repo.bzl", "nu_toolchains_hub")
-load("//nu/private/extensions:url.bzl", "create_url")
+load("//nu/private/extensions:url.bzl", "assert_name_is_valid", "create_url")
 load("//nu/private/extensions:version.bzl", "resolve_version")
 
 def _nu_impl(mctx):
@@ -13,17 +13,14 @@ def _nu_impl(mctx):
 
     for mod in mctx.modules:
         for tag in mod.tags.url:
-            if tag.name == "nu_toolchains":
-                fail(
-                    "Repository name 'nu_toolchains' is reserved by rules_nu for the " +
-                    "auto-generated toolchains hub. Please use a different name in nu.url().",
-                )
+            assert_name_is_valid(tag.name)
             repo, constraints = create_url(tag)
             hub_toolchains[repo] = constraints
 
         for tag in mod.tags.latest + mod.tags.toolchain:
             version_number = getattr(tag, "version", None)
             facts |= update_facts(
+                mctx,
                 version = version_number,
                 facts = facts,
             )
