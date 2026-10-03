@@ -1,27 +1,15 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//nu/private/extensions:defs.bzl", "NUSHELL_PLATFORM_ID")
+load("//nu/private/extensions:facts.bzl", "update_facts")
 load("//nu/private/extensions:hub_repo.bzl", "nu_toolchains_hub")
 load("//nu/private/extensions:url.bzl", "create_url")
-load("//nu/private/extensions:version.bzl", "create_version", "latest_version")
-
-def _canonical_os(os):
-    os_name = os.lower()
-    if any([os_name.startswith(x) for x in ("mac", "darwin")]):
-        return "macos"
-    if os_name.startswith("windows"):
-        return "windows"
-    return os_name
-
-def _canonical_arch(arch):
-    arch = arch.lower()
-    if arch in ("amd64", "x86_64", "x64"):
-        return "x86_64"
-    if arch in ("aarch64", "arm64"):
-        return "aarch64"
-    return arch
+load("//nu/private/extensions:version.bzl", "resolve_version")
 
 def _nu_impl(mctx):
     # Maps repo_name -> exec_compatible_with constraints for the hub.
     hub_toolchains = {}
     seen = {}
+    facts = mctx.facts
 
     for mod in mctx.modules:
         for tag in mod.tags.url:
@@ -34,18 +22,28 @@ def _nu_impl(mctx):
             hub_toolchains[repo] = constraints
 
         for tag in mod.tags.latest + mod.tags.toolchain:
-            os = _canonical_os(tag.os or mctx.os.name)
-            arch = _canonical_arch(tag.arch or mctx.os.arch)
-            version = getattr(tag, "version", latest_version())
-            key = (version, os, arch)
-            if key not in seen:
-                seen[key] = True
-                repo, constraints = create_version(
-                    version = version,
-                    os = os,
-                    arch = arch,
+            version_number = getattr(tag, "version", None)
+            facts |= update_facts(
+                version = version_number,
+                facts = facts,
+            )
+            version = resolve_version(
+                raw_version = version_number,
+                raw_os = tag.os or mctx.os,
+                raw_arch = tag.arch or mctx.arch,
+                facts = facts,
+            )
+
+            if version.key not in seen:
+                seen[version.key] = True
+                http_archive(
+                    name = version.repo_name,
+                    url = version.url,
+                    sha256 = version.sha256,
+                    build_file = version.build_file,
                 )
-                hub_toolchains[repo] = constraints
+
+                hub_toolchains[version.repo_name] = version.constraints
 
     nu_toolchains_hub(
         name = "nu_toolchains",

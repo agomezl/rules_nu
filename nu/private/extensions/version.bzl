@@ -1,75 +1,81 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load(
-    "@rules_nu//nu/private/extensions:defs.bzl",
-    "NUSHELL_CONSTRAINTS_MAP",
+    "//nu/private/extensions:defs.bzl",
+    "NUSHELL_ARCH_CONSTRAINTS_MAP",
+    "NUSHELL_OS_CONSTRAINTS_MAP",
     "NUSHELL_PLATFORM_ID",
-    "NUSHELL_RELEASES",
 )
-load("@rules_nu//nu/private/extensions:templates.bzl", "PER_PLATFORM_BUILD_TEMPLATE")
+load("//nu/private/extensions:templates.bzl", "PER_PLATFORM_BUILD_TEMPLATE")
 
-def _get_platform_identifier(os, arch):
+def _canonical_os(os):
+    os_name = os.lower()
+    if any([os_name.startswith(x) for x in ("mac", "darwin")]):
+        return "macos"
+    if os_name.startswith("windows"):
+        return "windows"
+    return os_name
+
+def _canonical_arch(arch):
+    arch = arch.lower()
+    if arch in ("amd64", "x86_64", "x64"):
+        return "x86_64"
+    if arch in ("aarch64", "arm64"):
+        return "aarch64"
+    return arch
+
+def _get_platform_constraints(*, os, arch):
+    if (os not in NUSHELL_OS_CONSTRAINTS_MAP or
+        arch not in NUSHELL_ARCH_CONSTRAINTS_MAP):
+        fail("Unsupported platform: {} on {}".format(arch, os))
+    return [
+        NUSHELL_OS_CONSTRAINTS_MAP[os],
+        NUSHELL_ARCH_CONSTRAINTS_MAP[arch],
+    ]
+
+def _get_repo_name(*, platform, version):
+    return "nu_{}_{}".format(
+        version.replace(".", "_"),
+        platform,
+    )
+
+def _get_build_file(*, os, version, id):
+    nu_path = "nu.exe" if os == "windows" else "nu-{}-{}/nu".format(version, id)
+    return PER_PLATFORM_BUILD_TEMPLATE.format(nu_path = nu_path)
+
+def resolve_version(raw_version, raw_os, raw_arch, facts):
+    os = _canonical_os(raw_os)
+    arch = _canonical_arch(raw_arch)
+
     if os not in NUSHELL_PLATFORM_ID or arch not in NUSHELL_PLATFORM_ID[os]:
         fail("Unsupported platform: {} on {}".format(arch, os))
-    return NUSHELL_PLATFORM_ID[os][arch]
 
-def _get_platform_constraints(platform):
-    if platform not in NUSHELL_CONSTRAINTS_MAP:
-        fail("Unknown platform: {}".format(platform))
-    return NUSHELL_CONSTRAINTS_MAP[platform]
+    id = NUSHELL_PLATFORM_ID[os][arch]
+    version = raw_version or facts["latest"]
+    constraints = _get_platform_constraints(os = os, arch = arch)
+    repo_name = _get_repo_name(version = version, platform = id)
+    build_file = _get_build_file(os = os, version = version, id = id)
 
-def _get_release_hash(version, platform):
-    if version not in NUSHELL_RELEASES:
-        fail("Version {} not found in NUSHELL_RELEASES. Available versions: {}".format(
-            version,
-            ", ".join(sorted(NUSHELL_RELEASES.keys())),
-        ))
-    version_data = NUSHELL_RELEASES[version]
-    if platform not in version_data:
-        fail("Platform {} not available for version {}. Available platforms: {}".format(
-            platform,
-            version,
-            ", ".join(sorted(version_data.keys())),
-        ))
-    return version_data[platform]
+    if version not in facts:
+        # TODO: Add information on how to fix this
+        fail("Version {} is not in MODULE.bazel.lock.".format(version))
 
-def _version_gt(a, b):
-    """Returns True if semver string *a* is greater than *b*."""
-    a_parts = [int(x) for x in a.split(".")]
-    b_parts = [int(x) for x in b.split(".")]
-    return a_parts > b_parts
+    if id not in facts[version]:
+        # TODO: Add information on how to fix this
+        fail(
+            "Platform {} is not in MODULE.bazel.lock for version {}".format(id, version),
+        )
 
-def latest_version():
-    """Returns the highest version string present in NUSHELL_RELEASES."""
-    result = None
-    for v in NUSHELL_RELEASES.keys():
-        if result == None or _version_gt(v, result):
-            result = v
-    return result
+    url = facts[version][id]["url"]
+    sha256 = facts[version][id]["sha256"]
 
-def create_version(version, os, arch):
-    """Creates an http_archive for *version* on the given *os*/*arch*.
-
-    Returns (repo_name, constraints) so the caller can register it in the hub.
-    """
-    platform = _get_platform_identifier(os, arch)
-    sha256 = _get_release_hash(version, platform)
-    constraints = _get_platform_constraints(platform)
-
-    repo_name = "nu_{}_{}".format(
-        version.replace(".", "_"),
-        platform.replace("-", "_"),
-    )
-
-    http_archive(
-        name = repo_name,
-        url = "https://github.com/nushell/nushell/releases/download/{v}/nu-{v}-{p}.tar.gz".format(
-            v = version,
-            p = platform,
-        ),
+    return struct(
+        id = id,
+        repo_name = repo_name,
+        os = os,
+        arch = arch,
+        number = version,
+        constraints = constraints,
+        key = (version, os, arch),
+        url = url,
         sha256 = sha256,
-        build_file_content = PER_PLATFORM_BUILD_TEMPLATE.format(
-            nu_path = "nu-{}-{}/nu".format(version, platform),
-        ),
+        build_file = build_file,
     )
-
-    return repo_name, constraints
