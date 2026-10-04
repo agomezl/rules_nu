@@ -19,7 +19,7 @@ def create_facts(mctx):
         return current_value or value
 
     def _insert(self, key, value):
-        self._facts()[key] = value
+        self._current_facts()[key] = value
 
     self = struct(
         _facts = lambda: facts,
