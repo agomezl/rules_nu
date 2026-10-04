@@ -49,23 +49,23 @@ def resolve_version(raw_version, raw_os, raw_arch, facts):
         fail("Unsupported platform: {} on {}".format(arch, os))
 
     id = NUSHELL_PLATFORM_ID[os][arch]
-    version = raw_version or facts["latest"]
+    version = raw_version or facts.get("latest")
     constraints = _get_platform_constraints(os = os, arch = arch)
     repo_name = _get_repo_name(version = version, platform = id)
     build_file = _get_build_file(os = os, version = version, id = id)
 
-    if version not in facts:
+    if not facts.contains(version):
         # TODO: Add information on how to fix this
         fail("Version {} is not in MODULE.bazel.lock.".format(version))
 
-    if id not in facts[version]:
+    if id not in facts.get(version):
         # TODO: Add information on how to fix this
         fail(
             "Platform {} is not in MODULE.bazel.lock for version {}".format(id, version),
         )
 
-    url = facts[version][id]["url"]
-    sha256 = facts[version][id]["sha256"]
+    url = facts.get(version)[id]["url"]
+    sha256 = facts.get(version)[id]["sha256"]
 
     return struct(
         id = id,

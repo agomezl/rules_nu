@@ -1,6 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//nu/private/extensions:defs.bzl", "NUSHELL_PLATFORM_ID")
-load("//nu/private/extensions:facts.bzl", "update_facts")
+load("//nu/private/extensions:facts.bzl", "create_facts", "update_facts")
 load("//nu/private/extensions:hub_repo.bzl", "nu_toolchains_hub")
 load("//nu/private/extensions:url.bzl", "assert_name_is_valid", "create_url")
 load("//nu/private/extensions:version.bzl", "resolve_version")
@@ -9,7 +9,7 @@ def _nu_impl(mctx):
     # Maps repo_name -> exec_compatible_with constraints for the hub.
     hub_toolchains = {}
     seen = {}
-    facts = {}
+    facts = create_facts(mctx)
 
     for mod in mctx.modules:
         for tag in mod.tags.url:
@@ -19,10 +19,10 @@ def _nu_impl(mctx):
 
         for tag in mod.tags.latest + mod.tags.toolchain:
             version_number = getattr(tag, "version", None)
-            facts |= update_facts(
+            update_facts(
                 mctx,
                 version = version_number,
-                facts = mctx.facts,
+                facts = facts,
             )
             version = resolve_version(
                 raw_version = version_number,
@@ -48,7 +48,7 @@ def _nu_impl(mctx):
     )
 
     return mctx.extension_metadata(
-        facts = facts,
+        facts = facts.all(),
     )
 
 _toolchain = tag_class(attrs = {
