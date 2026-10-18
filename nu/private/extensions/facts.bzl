@@ -56,7 +56,7 @@ def _fetch_version_facts(mctx, *, version, path = None):
     artifacts = {
         artifact: sha256
         for line in mctx.read(path).splitlines()
-        for sha256, artifact in [tuple(line.split("  "))]
+        for sha256, _, artifact in [line.partition("  ")]
         if artifact.endswith(".tar.gz") or artifact.endswith(".zip")
     }
 
@@ -64,8 +64,7 @@ def _fetch_version_facts(mctx, *, version, path = None):
     for artifact, sha256 in artifacts.items():
         id = (
             artifact
-                .split(version)[1]
-                .removeprefix("-")
+                .removeprefix("nu-{}".format(version))
                 .removesuffix(".tar.gz")
                 .removesuffix(".zip")
         )
