@@ -55,13 +55,11 @@ def resolve_version(raw_version, raw_os, raw_arch, facts):
     build_file = _get_build_file(os = os, version = version, id = id)
 
     if not facts.contains(version):
-        # TODO: Add information on how to fix this
-        fail("Version {} is not in MODULE.bazel.lock.".format(version))
+        fail("BUG: Version {} is unknown".format(version))
 
     if id not in facts.get(version):
-        # TODO: Add information on how to fix this
         fail(
-            "Platform {} is not in MODULE.bazel.lock for version {}".format(id, version),
+            "ERROR: Nu version {} has no entry for platform {}".format(version, id),
         )
 
     url = facts.get(version)[id]["url"]
