@@ -38,9 +38,7 @@ def _download_sha256sums(mctx, *, path, version = None):
     else:  # Get the latest
         url = "{}/latest/download/SHA256SUMS".format(NUSHELL_RELEASES_URL)
 
-    result = mctx.download(url = url, output = path)
-    if not result.success:
-        fail("Failed to download SHA256SUMS: {}".format(result.error))
+    mctx.download(url = url, output = path)
 
     return path
 
