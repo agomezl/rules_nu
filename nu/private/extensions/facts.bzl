@@ -75,9 +75,7 @@ def _fetch_version_facts(mctx, *, version, path = None):
 
     available_versions = {}
     for artifact, sha256 in artifacts.items():
-        print(artifact)
         id = _get_id(artifact, version)
-        print(id)
         if id in NUSHELL_VALID_PLATFORM_IDS:
             available_versions[id] = {
                 "sha256": sha256,
