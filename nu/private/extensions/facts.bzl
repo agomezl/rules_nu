@@ -1,5 +1,12 @@
+load("//nu/private/extensions:defs.bzl", "NUSHELL_PLATFORM_ID")
+
 NUSHELL_RELEASES_URL = "https://github.com/nushell/nushell/releases"
 LATEST_SHA256SUM_PATH = "latest/SHA256SUMS"
+NUSHELL_VALID_PLATFORM_IDS = set([
+    id
+    for v in NUSHELL_PLATFORM_ID.values()
+    for id in v.values()
+])
 
 # buildifier: disable=uninitialized
 def create_facts(mctx):
@@ -42,6 +49,14 @@ def _download_sha256sums(mctx, *, path, version = None):
 
     return path
 
+def _get_id(artifact, version):
+    return (
+        artifact
+            .removeprefix("nu-{}-".format(version))
+            .removesuffix(".tar.gz")
+            .removesuffix(".zip")
+    )
+
 def _fetch_version_facts(mctx, *, version, path = None):
     if not path:
         path = _download_sha256sums(
@@ -60,19 +75,18 @@ def _fetch_version_facts(mctx, *, version, path = None):
 
     available_versions = {}
     for artifact, sha256 in artifacts.items():
-        id = (
-            artifact
-                .removeprefix("nu-{}".format(version))
-                .removesuffix(".tar.gz")
-                .removesuffix(".zip")
-        )
-        available_versions[id] = {}
-        available_versions[id]["sha256"] = sha256
-        available_versions[id]["url"] = "{}/download/{}/{}".format(
-            NUSHELL_RELEASES_URL,
-            version,
-            artifact,
-        )
+        print(artifact)
+        id = _get_id(artifact, version)
+        print(id)
+        if id in NUSHELL_VALID_PLATFORM_IDS:
+            available_versions[id] = {
+                "sha256": sha256,
+                "url": "{}/download/{}/{}".format(
+                    NUSHELL_RELEASES_URL,
+                    version,
+                    artifact,
+                ),
+            }
 
     return available_versions
 
