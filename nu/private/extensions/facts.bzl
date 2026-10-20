@@ -2,11 +2,11 @@ load("//nu/private/extensions:defs.bzl", "NUSHELL_PLATFORM_ID")
 
 NUSHELL_RELEASES_URL = "https://github.com/nushell/nushell/releases"
 LATEST_SHA256SUM_PATH = "latest/SHA256SUMS"
-NUSHELL_VALID_PLATFORM_IDS = set([
+NUSHELL_VALID_PLATFORM_IDS = [
     id
     for v in NUSHELL_PLATFORM_ID.values()
     for id in v.values()
-])
+]
 
 # buildifier: disable=uninitialized
 def create_facts(mctx):
