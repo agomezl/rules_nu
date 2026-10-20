@@ -10,7 +10,7 @@ NUSHELL_VALID_PLATFORM_IDS = set([
 
 # buildifier: disable=uninitialized
 def create_facts(mctx):
-    facts = mctx.facts
+    facts = getattr(mctx, "facts", {})  # Only available in newer Bazel versions
     current_facts = {}
 
     def _get(self, key):

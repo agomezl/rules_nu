@@ -47,9 +47,9 @@ def _nu_impl(mctx):
         toolchain_repos = hub_toolchains,
     )
 
-    return mctx.extension_metadata(
-        facts = facts.all(),
-    )
+    if hasattr(mctx, "facts"):
+        return mctx.extension_metadata(facts = facts.all())
+    return mctx.extension_metadata()
 
 _toolchain = tag_class(attrs = {
     "version": attr.string(
