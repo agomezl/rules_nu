@@ -1,0 +1,133 @@
+load("//nu/private/extensions:defs.bzl", "NUSHELL_PLATFORM_ID")
+
+NUSHELL_RELEASES_URL = "https://github.com/nushell/nushell/releases"
+LATEST_SHA256SUM_PATH = "latest/SHA256SUMS"
+NUSHELL_VALID_PLATFORM_IDS = [
+    id
+    for v in NUSHELL_PLATFORM_ID.values()
+    for id in v.values()
+]
+
+# buildifier: disable=uninitialized
+def create_facts(mctx):
+    facts = getattr(mctx, "facts", {})  # Only available in newer Bazel versions
+    current_facts = {}
+
+    def _get(self, key):
+        value = self._facts().get(key)
+        current_value = self._current_facts().get(key)
+
+        # We store every unseen value in current_facts to ensure
+        # that only the facts that are relevant to this evaluation
+        # are returned.
+        if value and not current_value:
+            self._current_facts()[key] = value
+
+        return current_value or value
+
+    def _insert(self, key, value):
+        self._current_facts()[key] = value
+
+    self = struct(
+        _facts = lambda: facts,
+        _current_facts = lambda: current_facts,
+        get = lambda key: _get(self, key),
+        insert = lambda key, value: _insert(self, key, value),
+        contains = lambda key: bool(_get(self, key)),
+        all = lambda: self._current_facts(),
+    )
+
+    return self
+
+def _download_sha256sums(mctx, *, path, version = None):
+    if version:
+        url = "{}/download/{}/SHA256SUMS".format(NUSHELL_RELEASES_URL, version)
+    else:  # Get the latest
+        url = "{}/latest/download/SHA256SUMS".format(NUSHELL_RELEASES_URL)
+
+    mctx.download(url = url, output = path)
+
+    return path, url
+
+def _get_id(artifact, version):
+    return (
+        artifact
+            .removeprefix("nu-{}-".format(version))
+            .removesuffix(".tar.gz")
+            .removesuffix(".zip")
+    )
+
+def _fetch_version_facts(mctx, *, version, path = None):
+    if not path:
+        path, _ = _download_sha256sums(
+            mctx,
+            path = "{}/SHA256SUMS".format(version),
+            version = version,
+        )
+
+    # Sha256sum line format: <sha256>  nu-<version>-<artifact>.<ext>
+    artifacts = {
+        artifact: sha256
+        for line in mctx.read(path).splitlines()
+        for sha256, _, artifact in [line.partition("  ")]
+        if artifact.endswith(".tar.gz") or artifact.endswith(".zip")
+    }
+
+    available_versions = {}
+    for artifact, sha256 in artifacts.items():
+        id = _get_id(artifact, version)
+        if id in NUSHELL_VALID_PLATFORM_IDS:
+            available_versions[id] = {
+                "sha256": sha256,
+                "url": "{}/download/{}/{}".format(
+                    NUSHELL_RELEASES_URL,
+                    version,
+                    artifact,
+                ),
+            }
+
+    return available_versions
+
+def _resolve_latest(mctx):
+    latest_sha256sums, url = _download_sha256sums(mctx, path = LATEST_SHA256SUM_PATH)
+
+    # Sha256sum line format: <sha256>  nu-<version>-<platform>
+    latest_version = None
+    for line in mctx.read(latest_sha256sums).splitlines():
+        _, _, artifact = line.partition("  ")
+        if artifact.startswith("nu-"):
+            latest_version = artifact.split("-", 3)[1]
+            break
+
+    if not latest_version:
+        fail("ERROR: Could not resolve latest version from: {}".format(url))
+
+    return latest_version
+
+def _update_latest_version(mctx, *, facts):
+    path = None
+    version = facts.get("latest")
+    if not version:
+        version = _resolve_latest(mctx)
+        facts.insert("latest", version)
+        path = LATEST_SHA256SUM_PATH
+
+    _update_version(
+        mctx,
+        version = version,
+        facts = facts,
+        path = path,
+    )
+
+def _update_version(mctx, *, version, facts, path = None):
+    if not facts.contains(version):
+        facts.insert(
+            version,
+            _fetch_version_facts(mctx, version = version, path = path),
+        )
+
+def update_facts(mctx, *, version, facts):
+    if version:
+        _update_version(mctx, version = version, facts = facts)
+    else:
+        _update_latest_version(mctx, facts = facts)
