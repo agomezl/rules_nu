@@ -47,7 +47,7 @@ def _download_sha256sums(mctx, *, path, version = None):
 
     mctx.download(url = url, output = path)
 
-    return path
+    return path, url
 
 def _get_id(artifact, version):
     return (
@@ -59,7 +59,7 @@ def _get_id(artifact, version):
 
 def _fetch_version_facts(mctx, *, version, path = None):
     if not path:
-        path = _download_sha256sums(
+        path, _ = _download_sha256sums(
             mctx,
             path = "{}/SHA256SUMS".format(version),
             version = version,
@@ -89,14 +89,19 @@ def _fetch_version_facts(mctx, *, version, path = None):
     return available_versions
 
 def _resolve_latest(mctx):
-    latest_sha256sums = _download_sha256sums(mctx, path = LATEST_SHA256SUM_PATH)
+    latest_sha256sums, url = _download_sha256sums(mctx, path = LATEST_SHA256SUM_PATH)
 
     # Sha256sum line format: <sha256>  nu-<version>-<platform>
-    latest_version = (
-        mctx.read(latest_sha256sums)
-            .splitlines()[0]  # Take only the first line
-            .split("-", 3)[1]  # Split on '-' to get the version
-    )
+    latest_version = None
+    for line in mctx.read(latest_sha256sums).splitlines():
+        _, _, artifact = line.partition("  ")
+        if artifact.startswith("nu-"):
+            latest_version = artifact.split("-", 3)[1]
+            break
+
+    if not latest_version:
+        fail("ERROR: Could not resolve latest version from: {}".format(url))
+
     return latest_version
 
 def _update_latest_version(mctx, *, facts):
