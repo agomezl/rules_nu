@@ -44,18 +44,18 @@ def _get_build_file(*, os, version, id):
 def resolve_version(raw_version, raw_os, raw_arch, facts):
     os = _canonical_os(raw_os)
     arch = _canonical_arch(raw_arch)
+    version = raw_version or facts.get("latest")
 
     if os not in NUSHELL_PLATFORM_ID or arch not in NUSHELL_PLATFORM_ID[os]:
         fail("Unsupported platform: {} on {}".format(arch, os))
 
+    if not facts.contains(version):
+        fail("BUG: Version {} is unknown".format(version))
+
     id = NUSHELL_PLATFORM_ID[os][arch]
-    version = raw_version or facts.get("latest")
     constraints = _get_platform_constraints(os = os, arch = arch)
     repo_name = _get_repo_name(version = version, platform = id)
     build_file = _get_build_file(os = os, version = version, id = id)
-
-    if not facts.contains(version):
-        fail("BUG: Version {} is unknown".format(version))
 
     if id not in facts.get(version):
         fail(
