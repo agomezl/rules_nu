@@ -8,7 +8,6 @@ load("//nu/private/extensions:version.bzl", "resolve_version")
 def _nu_impl(mctx):
     # Maps repo_name -> exec_compatible_with constraints for the hub.
     hub_toolchains = {}
-    seen = {}
     facts = create_facts(mctx)
 
     for mod in mctx.modules:
@@ -31,16 +30,14 @@ def _nu_impl(mctx):
                 facts = facts,
             )
 
-            if version.key not in seen:
-                seen[version.key] = True
+            if version.repo_name not in hub_toolchains:
+                hub_toolchains[version.repo_name] = version.constraints
                 http_archive(
                     name = version.repo_name,
                     url = version.url,
                     sha256 = version.sha256,
                     build_file_content = version.build_file,
                 )
-
-                hub_toolchains[version.repo_name] = version.constraints
 
     nu_toolchains_hub(
         name = "nu_toolchains",

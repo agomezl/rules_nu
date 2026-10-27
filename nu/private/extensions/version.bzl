@@ -61,13 +61,8 @@ def resolve_version(raw_version, raw_os, raw_arch, facts):
     sha256 = facts.get(version)[id]["sha256"]
 
     return struct(
-        id = id,
         repo_name = repo_name,
-        os = os,
-        arch = arch,
-        number = version,
         constraints = constraints,
-        key = (version, os, arch),
         url = url,
         sha256 = sha256,
         build_file = build_file,
