@@ -1,9 +1,4 @@
-load(
-    "//nu/private/extensions:defs.bzl",
-    "NUSHELL_ARCH_CONSTRAINTS_MAP",
-    "NUSHELL_OS_CONSTRAINTS_MAP",
-    "NUSHELL_PLATFORM_ID",
-)
+load("//nu/private/extensions:defs.bzl", "NUSHELL_PLATFORM_ID")
 load("//nu/private/extensions:templates.bzl", "PER_PLATFORM_BUILD_TEMPLATE")
 
 def _canonical_os(os):
@@ -23,12 +18,12 @@ def _canonical_arch(arch):
     return arch
 
 def _get_platform_constraints(*, os, arch):
-    if (os not in NUSHELL_OS_CONSTRAINTS_MAP or
-        arch not in NUSHELL_ARCH_CONSTRAINTS_MAP):
+    if (os not in NUSHELL_PLATFORM_ID or
+        arch not in NUSHELL_PLATFORM_ID[os]):
         fail("Unsupported platform: {} on {}".format(arch, os))
     return [
-        NUSHELL_OS_CONSTRAINTS_MAP[os],
-        NUSHELL_ARCH_CONSTRAINTS_MAP[arch],
+        "@platforms//os:{}".format(os),
+        "@platforms//cpu:{}".format(arch),
     ]
 
 def _get_repo_name(*, platform, version):
