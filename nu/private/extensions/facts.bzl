@@ -127,6 +127,7 @@ def _update_version(mctx, *, version, facts, path = None):
         )
 
 def update_facts(mctx, *, version, facts):
+    """Ensures `facts` has the hashes of `version` (the latest release if empty)."""
     if version:
         _update_version(mctx, version = version, facts = facts)
     else:
