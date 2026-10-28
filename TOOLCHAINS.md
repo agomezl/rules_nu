@@ -12,9 +12,13 @@ use_repo(nu, "nu_toolchains")
 register_toolchains("@nu_toolchains//:all")
 ```
 
-`nu.latest()` resolves to the highest version present in the release database
-at the time of the `rules_nu` release you are using — no network lookup is
-performed. The correct binary for the host platform is fetched automatically.
+`nu.latest()` resolves to the latest Nushell release the first time it is
+evaluated and records the version and archive hashes in `MODULE.bazel.lock`
+(as module extension facts), so later builds are reproducible. The correct
+binary for the host platform is fetched automatically.
+
+To move to a newer release, remove the `//nu:extensions.bzl%nu` entry under
+`facts` in `MODULE.bazel.lock` and run `bazel mod deps`.
 
 ## Pinned version
 
@@ -30,8 +34,8 @@ use_repo(nu, "nu_toolchains")
 register_toolchains("@nu_toolchains//:all")
 ```
 
-Supported versions are listed in
-[`nu/private/extensions/defs.bzl`](nu/private/extensions/defs.bzl).
+Any released version works; its hashes are fetched from the release's
+`SHA256SUMS` and recorded in `MODULE.bazel.lock`.
 
 ## Multi-platform / remote execution
 

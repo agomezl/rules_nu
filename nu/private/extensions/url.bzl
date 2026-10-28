@@ -17,3 +17,17 @@ def create_url(tag):
     )
 
     return tag.name, tag.exec_compatible_with
+
+def assert_name_is_available(name, existing_names):
+    if name == "nu_toolchains":
+        fail(
+            "Repository name 'nu_toolchains' is reserved by rules_nu for the " +
+            "auto-generated toolchains hub.\n Please use a different name in nu.url().",
+        )
+    if name in existing_names:
+        fail(
+            """
+            Repository name '{}' is already in use.
+            Please use a different name in nu.url().
+            """.format(name),
+        )
