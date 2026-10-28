@@ -18,9 +18,6 @@ def _canonical_arch(arch):
     return arch
 
 def _get_platform_constraints(*, os, arch):
-    if (os not in NUSHELL_PLATFORM_ID or
-        arch not in NUSHELL_PLATFORM_ID[os]):
-        fail("Unsupported platform: {} on {}".format(arch, os))
     return [
         "@platforms//os:{}".format(os),
         "@platforms//cpu:{}".format(arch),
