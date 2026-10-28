@@ -2,8 +2,50 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//nu/private/extensions:defs.bzl", "NUSHELL_PLATFORM_ID")
 load("//nu/private/extensions:facts.bzl", "create_facts", "update_facts")
 load("//nu/private/extensions:hub_repo.bzl", "nu_toolchains_hub")
-load("//nu/private/extensions:url.bzl", "assert_name_is_valid", "create_url")
+load(
+    "//nu/private/extensions:url.bzl",
+    "assert_name_is_available",
+    "create_url",
+)
 load("//nu/private/extensions:version.bzl", "resolve_version")
+
+def _nu_version_tag_impl(mctx, version_tag, facts, hub_toolchains):
+    version_number = getattr(version_tag, "version", None)
+    update_facts(
+        mctx,
+        version = version_number,
+        facts = facts,
+    )
+    version = resolve_version(
+        raw_version = version_number,
+        raw_os = version_tag.os or mctx.os.name,
+        raw_arch = version_tag.arch or mctx.os.arch,
+        facts = facts,
+    )
+
+    if version.repo_name not in hub_toolchains:
+        http_archive(
+            name = version.repo_name,
+            url = version.url,
+            sha256 = version.sha256,
+            build_file_content = version.build_file,
+        )
+
+    if version.constraints != hub_toolchains.get(
+        version.repo_name,
+        version.constraints,
+    ):
+        fail("BUG: version constraints mismatch for {}: {} != {}".format(
+            version.repo_name,
+            version.constraints,
+            hub_toolchains[version.repo_name],
+        ))
+
+    return version.repo_name, version.constraints
+
+def _nu_url_tag_impl(mctx, url_tag, facts, hub_toolchains):
+    assert_name_is_available(url_tag.name, hub_toolchains)
+    return create_url(url_tag)
 
 def _nu_impl(mctx):
     # Maps repo_name -> exec_compatible_with constraints for the hub.
@@ -11,33 +53,13 @@ def _nu_impl(mctx):
     facts = create_facts(mctx)
 
     for mod in mctx.modules:
-        for tag in mod.tags.url:
-            assert_name_is_valid(tag.name)
-            repo, constraints = create_url(tag)
+        for tag in mod.tags.latest + mod.tags.toolchain:
+            repo, constraints = _nu_version_tag_impl(mctx, tag, facts, hub_toolchains)
             hub_toolchains[repo] = constraints
 
-        for tag in mod.tags.latest + mod.tags.toolchain:
-            version_number = getattr(tag, "version", None)
-            update_facts(
-                mctx,
-                version = version_number,
-                facts = facts,
-            )
-            version = resolve_version(
-                raw_version = version_number,
-                raw_os = tag.os or mctx.os.name,
-                raw_arch = tag.arch or mctx.os.arch,
-                facts = facts,
-            )
-
-            if version.repo_name not in hub_toolchains:
-                hub_toolchains[version.repo_name] = version.constraints
-                http_archive(
-                    name = version.repo_name,
-                    url = version.url,
-                    sha256 = version.sha256,
-                    build_file_content = version.build_file,
-                )
+        for tag in mod.tags.url:
+            repo, constraints = _nu_url_tag_impl(mctx, tag, facts, hub_toolchains)
+            hub_toolchains[repo] = constraints
 
     nu_toolchains_hub(
         name = "nu_toolchains",
